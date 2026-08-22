@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stokefinder">
+<meta name="theme-color" content="#EB0D6E">
+<link rel="manifest" href='data:application/json,{"name":"The Endless Stokefinder","short_name":"Stokefinder","display":"standalone","background_color":"%23EB0D6E","theme_color":"%23EB0D6E","icons":[{"src":"icon.png","sizes":"512x512","type":"image/png"}]}'>
 <title>The Endless Stokefinder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -138,7 +145,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.24</div>
+      <div class="ver">v0.26</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -164,7 +171,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <summary aria-label="Om beräkningen och datakällorna">ⓘ</summary>
   <div class="infobody">
     <b>Modeller:</b> ECMWF WAM (0,25° ≈ 25 km, körs var 6:e timme) och DWD ICON EWAM (0,05° ≈ 5 km, ~4 dygn, körs var 12:e timme); kortet visar den högre av de två.
-    <b>Sydlig komponent:</b> S = Hs·cos(θ−180°), θ = riktningen vågorna kommer ifrån; negativa värden sätts till 0.
+    <b>Våghöjd:</b> total signifikant våghöjd Hs, medräknad endast när vågriktningen (varifrån) ligger i sektorn 90°–270°, dvs. öst till väst via syd. Vågor norrifrån räknas som platt.
     <b>Ljusa timmar:</b> civil gryning till civil skymning (solhöjd −6°), beräknat astronomiskt för punkten.
     <b>Data:</b> Open-Meteo Marine API (CC BY 4.0) — samma modelldata som visas i Windy. Signifikant våghöjd = medel av högsta tredjedelen; enskilda vågor kan vara ~1,9× högre.
   </div>
@@ -180,11 +187,10 @@ const $=id=>document.getElementById(id);
 const DAYS=['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
 let DATA=null;
 
-/* ---------- sydlig komponent ---------- */
+/* ---------- sydsektor: totala Hs om riktningen är 90°–270° ---------- */
 function sydKomp(hs,dir){
   if(hs==null||dir==null)return null;
-  const s=hs*Math.cos((dir-180)*Math.PI/180);
-  return s>0?s:0;
+  return (dir>=90&&dir<=270)?hs:0;   // utanför sektorn räknas som platt
 }
 
 /* ---------- nivåklass ---------- */
