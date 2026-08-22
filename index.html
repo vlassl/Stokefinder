@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<title>The Endless Stokefinder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ HAVSBLÅ TEMA + NIVÅFÄRGER ============ */
+:root{
+  color-scheme:light only;
+  --sea:#E84425;          /* strand – orangeröd */
+  --sea-deep:#C93518;
+  --sky-pink:#EB0D6E;     /* himmel – magenta */
+  --sun-y:#FFCB2E;
+  --sun-o:#F59B1E;
+  --foam:#1B1512;         /* affischsvart text */
+  --foam-dim:#3D2418;
+  --ink:#12303F;
+  --lv0:#E3E8E7;  --lv0-tx:#7A8A90;
+  --lv1:#F7E29C;  --lv1-tx:#7A5D00;
+  --lv2:#C3E4A4;  --lv2-tx:#345C20;
+  --lv3:#6DBB6D;  --lv3-tx:#153F15;
+  --lv4:#C7A4E0;  --lv4-tx:#4A1E6E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;background:var(--sea)}
+/* bastonen ligger som gradientlager så den inte kan skrivas över av mörkt läge */
+html,body{
+  min-height:100%;
+  background-color:var(--sea);
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='420' height='225' viewBox='0 0 420 225'><g fill='%23140E0B'><path d='M53 58 L48 57 L52 54 L57 54 L59 56 L58 57 L53 58Z'/><path d='M267 91 L262 90 L267 89 L267 91Z'/><path d='M357 94 L353 92 L352 93 L351 92 L358 92 L357 94Z'/><path d='M250 104 L248 104 L251 102 L257 102 L275 98 L280 99 L272 102 L250 103 L250 104Z'/><path d='M342 104 L337 104 L338 102 L342 102 L342 104Z'/><path d='M367 104 L363 104 L363 103 L366 102 L367 104Z'/><path d='M240 105 L230 105 L230 104 L240 103 L240 105Z'/><path d='M283 108 L280 108 L283 105 L282 104 L283 103 L285 105 L283 108Z'/><path d='M310 113 L308 111 L309 110 L311 110 L312 111 L310 113Z'/><path d='M198 116 L194 116 L198 114 L198 116Z'/><path d='M335 124 L333 124 L333 122 L335 122 L335 124Z'/><path d='M276 125 L275 124 L279 124 L276 125Z'/><path d='M239 133 L234 132 L235 129 L236 131 L238 130 L238 128 L241 129 L243 131 L239 133Z'/><path d='M227 133 L226 132 L229 130 L229 132 L227 133Z'/><path d='M110 134 L107 133 L110 132 L110 134Z'/><path d='M219 135 L218 134 L219 133 L221 133 L219 135Z'/><path d='M91 140 L89 140 L89 137 L93 137 L95 134 L100 134 L100 136 L102 136 L101 138 L97 136 L96 137 L96 139 L94 138 L91 140Z'/><path d='M104 138 L102 137 L104 136 L106 137 L104 138Z'/><path d='M170 140 L168 139 L171 138 L170 140Z'/><path d='M376 140 L376 138 L377 138 L377 139 L376 140Z'/><path d='M63 142 L62 142 L61 141 L64 140 L66 140 L63 142Z'/><path d='M57 145 L54 145 L54 144 L57 144 L57 145Z'/><path d='M291 154 L289 153 L285 154 L283 152 L284 149 L286 149 L289 145 L296 147 L294 148 L290 146 L290 148 L291 147 L293 150 L296 149 L294 153 L291 154Z'/><path d='M209 147 L205 147 L207 145 L209 145 L209 147Z'/><path d='M202 149 L199 148 L202 146 L203 148 L202 149Z'/><path d='M215 151 L214 150 L215 149 L214 148 L215 146 L220 148 L219 149 L217 148 L215 151Z'/><path d='M277 149 L276 148 L277 147 L279 148 L277 149Z'/><path d='M236 151 L232 150 L236 149 L236 151Z'/><path d='M299 153 L296 153 L299 149 L300 151 L299 153Z'/><path d='M180 152 L179 152 L180 151 L183 151 L180 152Z'/><path d='M179 158 L173 158 L172 157 L180 154 L178 156 L178 157 L179 157 L179 158Z'/><path d='M358 168 L353 167 L350 167 L347 165 L354 166 L358 168Z'/><path d='M57 173 L54 172 L56 170 L58 170 L62 167 L67 167 L69 170 L66 172 L57 172 L57 173Z'/><path d='M229 175 L228 174 L230 172 L231 174 L229 175Z'/><path d='M80 180 L78 180 L77 178 L81 176 L80 180Z'/><path d='M84 183 L84 182 L86 180 L89 178 L96 178 L93 178 L84 183Z'/><path d='M61 184 L58 184 L63 180 L71 180 L68 183 L61 184Z'/><path d='M101 182 L100 181 L100 180 L105 180 L101 182Z'/><path d='M130 186 L129 183 L129 181 L130 183 L130 186Z'/><path d='M112 188 L108 188 L105 187 L102 184 L105 184 L107 183 L109 183 L110 182 L113 183 L116 185 L112 188Z'/><path d='M128 188 L124 188 L122 184 L127 183 L129 184 L128 188Z'/><path d='M100 187 L99 186 L100 184 L102 186 L100 187Z'/><path d='M153 188 L150 187 L148 188 L148 186 L153 185 L153 188Z'/><path d='M106 189 L105 189 L104 188 L106 188 L106 189Z'/><path d='M103 195 L100 195 L105 191 L107 192 L103 195Z'/><path d='M39 196 L36 196 L36 195 L41 192 L47 193 L39 196Z'/><path d='M92 195 L91 193 L94 193 L92 195Z'/><path d='M143 195 L142 195 L141 194 L143 194 L143 195Z'/><path d='M254 198 L253 197 L255 195 L255 197 L254 198Z'/><path d='M93 199 L88 197 L89 196 L94 197 L94 198 L93 199Z'/><path d='M60 210 L58 209 L62 205 L57 206 L55 204 L60 202 L62 199 L64 199 L70 199 L74 202 L73 203 L67 203 L64 201 L63 204 L64 206 L60 210Z'/><path d='M78 201 L78 199 L80 199 L78 201Z'/><path d='M140 204 L133 203 L133 199 L140 202 L140 204Z'/><path d='M53 203 L52 202 L57 200 L53 203Z'/><path d='M50 202 L45 201 L51 200 L50 202Z'/><path d='M106 203 L104 202 L105 200 L107 201 L106 203Z'/><path d='M191 209 L187 207 L188 205 L191 205 L192 207 L191 209Z'/><path d='M241 207 L240 207 L240 205 L242 206 L241 207Z'/><path d='M51 209 L48 208 L51 206 L52 207 L51 209Z'/><path d='M53 213 L50 212 L49 211 L56 209 L56 210 L53 213Z'/><path d='M173 211 L171 210 L171 209 L173 209 L173 211Z'/><path d='M48 216 L45 215 L46 214 L45 213 L47 212 L48 213 L48 216Z'/><path d='M58 219 L57 218 L55 219 L54 218 L59 215 L62 217 L58 219Z'/><path d='M46 220 L43 218 L46 217 L49 218 L46 220Z'/></g></svg>"),
+    linear-gradient(var(--sea), var(--sea));
+  background-attachment:fixed;
+}
+body{
+  font-family:'Archivo',sans-serif;
+  color:var(--foam);
+}
+.wrap{max-width:760px;margin:0 auto;padding:12px 14px 40px}
+
+/* ---------- himmel + horisont + sol ---------- */
+.sky{
+  background:var(--sky-pink);          /* platt magenta som affischen */
+  position:relative;
+  overflow:hidden;
+}
+.sun{
+  position:absolute;
+  bottom:-52px;right:7%;               /* till hälften bakom horisonten */
+  width:104px;height:104px;
+  border-radius:50%;
+  background:linear-gradient(to bottom, var(--sun-y) 20%, var(--sun-o) 100%);
+  /* platt affischsol – ingen glöd */
+}
+@media(max-width:480px){.sun{width:84px;height:84px;bottom:-42px;right:5%}}
+.skyw{padding-top:12px;padding-bottom:16px}
+
+/* ---------- header ---------- */
+header{position:relative;z-index:1}
+.ver{font:500 9px/1 'IBM Plex Mono',monospace;color:rgba(27,21,18,.65);letter-spacing:.08em}
+h1{
+  font-family:'Oswald',sans-serif;
+  font-weight:500;
+  font-size:clamp(26px,7vw,46px);  /* smala bokstäver – kan vara högre */
+  letter-spacing:.005em;
+  line-height:1;
+  margin-top:2px;
+  color:#1B1512;
+}
+h1 .s{color:#1B1512}
+
+/* ---------- rubrik + liten uppdateringsknapp ---------- */
+.headrow{display:flex;align-items:center;gap:10px;justify-content:flex-end;margin:2px 0 8px}
+button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
+
+/* ---------- veckoöversikt ---------- */
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.day{border:0;font-family:inherit;
+  border-radius:12px;
+  padding:8px 6px 7px;
+  text-align:center;
+  min-height:84px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  color:var(--ink);
+  box-shadow:0 3px 8px rgba(0,0,0,.16);
+}
+.day.lv0{background:var(--lv0)} .day.lv0 .big{color:var(--lv0-tx)}
+.day.lv1{background:var(--lv1)} .day.lv1 .big{color:var(--lv1-tx)}
+.day.lv2{background:var(--lv2)} .day.lv2 .big{color:var(--lv2-tx)}
+.day.lv3{background:var(--lv3)} .day.lv3 .big{color:var(--lv3-tx)}
+.day.lv4{background:var(--lv4)} .day.lv4 .big{color:var(--lv4-tx)}
+.day .dn{font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
+.day .dd{font-size:10px;opacity:.6}
+.day .big{font:600 20px/1.1 'IBM Plex Mono',monospace;margin-top:3px}
+.day .big .unit{font-size:10px}
+.day .at{font:500 11px 'IBM Plex Mono',monospace}
+.day .meta{font:500 8px 'IBM Plex Mono',monospace;opacity:.65;margin-top:auto;padding-top:3px}
+.day .arrow{display:inline-block;font-size:13px}
+.day .nodata{font-size:11px;opacity:.6;margin:auto 0}
+.day .pancake{font-size:32px;line-height:1;margin:auto 0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
+.day.link{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.day.link:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.24)}
+.day.link:active{transform:translateY(0)}
+.day.link:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
+
+/* ---------- färgskala + uppdateringsinfo ---------- */
+.scale{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font:500 10px 'IBM Plex Mono',monospace;color:#1B1512}
+.scale .s{display:flex;align-items:center;gap:5px}
+.scale .b{width:16px;height:12px;border-radius:3px}
+.nextup{font:500 11px 'IBM Plex Mono',monospace;color:#1B1512;text-align:right}
+.nextup.err{color:#5C0E0E;font-weight:600}
+
+/* ---------- fot ---------- */
+.info{margin-top:12px}
+.info summary{
+  list-style:none;cursor:pointer;
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#1B1512;color:#FFCB2E;
+  font-size:15px;line-height:1;-webkit-user-select:none;user-select:none;
+}
+.info summary::-webkit-details-marker{display:none}
+.info summary:hover{background:#000}
+.info summary:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
+.info[open] summary{background:#000}
+.infobody{margin-top:8px;font-size:10px;color:#2B1A10;line-height:1.6}
+.infobody b{color:#1B1512}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="sky">
+  <div class="sun" aria-hidden="true"></div>
+  <div class="wrap skyw">
+    <header>
+      <div class="ver">v0.24</div>
+      <h1>The Endless Stokefinder</h1>
+    </header>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="headrow">
+  <div class="nextup" id="nextup"></div>
+</div>
+
+<div class="days" id="days"></div>
+
+<div class="scale">
+  <div class="s"><span class="b" style="background:var(--lv0)"></span>🥞 &lt; 1,0 m</div>
+  <div class="s"><span class="b" style="background:var(--lv1)"></span>1,0–1,2</div>
+  <div class="s"><span class="b" style="background:var(--lv2)"></span>1,3–1,4</div>
+  <div class="s"><span class="b" style="background:var(--lv3)"></span>1,5–1,7</div>
+  <div class="s"><span class="b" style="background:var(--lv4)"></span>≥ 1,8 m</div>
+</div>
+
+<details class="info">
+  <summary aria-label="Om beräkningen och datakällorna">ⓘ</summary>
+  <div class="infobody">
+    <b>Modeller:</b> ECMWF WAM (0,25° ≈ 25 km, körs var 6:e timme) och DWD ICON EWAM (0,05° ≈ 5 km, ~4 dygn, körs var 12:e timme); kortet visar den högre av de två.
+    <b>Sydlig komponent:</b> S = Hs·cos(θ−180°), θ = riktningen vågorna kommer ifrån; negativa värden sätts till 0.
+    <b>Ljusa timmar:</b> civil gryning till civil skymning (solhöjd −6°), beräknat astronomiskt för punkten.
+    <b>Data:</b> Open-Meteo Marine API (CC BY 4.0) — samma modelldata som visas i Windy. Signifikant våghöjd = medel av högsta tredjedelen; enskilda vågor kan vara ~1,9× högre.
+  </div>
+</details>
+
+</div>
+
+<script>
+'use strict';
+const LAT=58.387, LON=17.858;
+const CIVIL_ZENITH=96;
+const $=id=>document.getElementById(id);
+const DAYS=['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+let DATA=null;
+
+/* ---------- sydlig komponent ---------- */
+function sydKomp(hs,dir){
+  if(hs==null||dir==null)return null;
+  const s=hs*Math.cos((dir-180)*Math.PI/180);
+  return s>0?s:0;
+}
+
+/* ---------- nivåklass ---------- */
+function level(v){
+  if(v==null)return 'lv0';
+  if(v<1.0)return 'lv0';
+  if(v<1.3)return 'lv1';
+  if(v<1.5)return 'lv2';
+  if(v<1.8)return 'lv3';
+  return 'lv4';
+}
+
+/* ---------- civil gryning/skymning ---------- */
+function sunEvent(date,rising){
+  const rad=Math.PI/180;
+  const N=Math.ceil((date-new Date(Date.UTC(date.getFullYear(),0,0)))/864e5);
+  const lngHour=LON/15;
+  const t=N+(((rising?6:18)-lngHour)/24);
+  const M=0.9856*t-3.289;
+  let L=M+1.916*Math.sin(M*rad)+0.020*Math.sin(2*M*rad)+282.634;
+  L=((L%360)+360)%360;
+  let RA=Math.atan(0.91764*Math.tan(L*rad))/rad;
+  RA=((RA%360)+360)%360;
+  RA+=(Math.floor(L/90)*90)-(Math.floor(RA/90)*90);
+  RA/=15;
+  const sinDec=0.39782*Math.sin(L*rad);
+  const cosDec=Math.cos(Math.asin(sinDec));
+  const cosH=(Math.cos(CIVIL_ZENITH*rad)-sinDec*Math.sin(LAT*rad))/(cosDec*Math.cos(LAT*rad));
+  if(cosH>1)return null;
+  if(cosH<-1)return rising?new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0)
+                          :new Date(date.getFullYear(),date.getMonth(),date.getDate(),23,59);
+  let H=rising?360-Math.acos(cosH)/rad:Math.acos(cosH)/rad;
+  H/=15;
+  const T=H+RA-0.06571*t-6.622;
+  let UT=T-lngHour;
+  UT=((UT%24)+24)%24;
+  const hh=Math.floor(UT),mm=Math.round((UT-hh)*60);
+  return new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),hh,mm));
+}
+function lightWindow(date){return {dawn:sunEvent(date,true),dusk:sunEvent(date,false)};}
+const fmtHM=d=>d?d.toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'}):'–';
+function dayKey(t){return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
+function isLight(t){
+  const w=DATA.light.get(dayKey(t));
+  if(!w||!w.dawn||!w.dusk)return true;
+  return t>=w.dawn&&t<=w.dusk;
+}
+
+/* ---------- nästa modelluppdatering ----------
+   ECMWF WAM: körningar 00/06/12/18 UTC, öppna data klara ca +8 h.
+   ICON EWAM: körningar 00/12 UTC, klara ca +5 h. */
+function nextAvail(runsUTC,delayH){
+  const now=new Date();
+  for(let d=0;d<2;d++){
+    for(const r of runsUTC){
+      const av=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+d,r+delayH,0));
+      if(av>now)return av;
+    }
+  }
+  return null;
+}
+function countdown(d){
+  if(!d)return '–';
+  let m=Math.max(0,Math.round((d-new Date())/6e4));
+  const h=Math.floor(m/60);m=m%60;
+  return 'om '+(h>0?h+' h ':'')+m+' min';
+}
+function updateNextInfo(){
+  const ec=nextAvail([0,6,12,18],8);
+  const ic=nextAvail([0,12],5);
+  $('nextup').textContent=`ECMWF ↻ ${countdown(ec)} · ICON ↻ ${countdown(ic)}`;
+  $('nextup').className='nextup';
+}
+setInterval(updateNextInfo,30e3);
+
+/* ---------- hämtning ---------- */
+async function fetchModel(model){
+  // prova längsta horisonten först, backa om API:et nekar –
+  // så följer appen automatiskt med om Open-Meteo förlänger arkivet
+  let lastErr=null;
+  for(const fd of [16,12,10,8,7]){
+    const u=`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}`+
+            `&hourly=wave_height,wave_direction&models=${model}&forecast_days=${fd}&timezone=auto`;
+    const r=await fetch(u);
+    if(r.status===400){lastErr=new Error(`${model}: HTTP 400 (forecast_days=${fd})`);continue;}
+    if(!r.ok)throw new Error(`${model}: HTTP ${r.status}`);
+    const j=await r.json();
+    if(!j.hourly||!j.hourly.time)throw new Error(`${model}: tomt svar`);
+    return j;
+  }
+  throw lastErr||new Error(`${model}: hämtningen misslyckades`);
+}
+
+let lastFetch=0;
+async function load(){
+  try{
+    const [ec,ic]=await Promise.allSettled([fetchModel('ecmwf_wam025'),fetchModel('ewam')]);
+    if(ec.status==='rejected'&&ic.status==='rejected'){
+      const sandbox=String(ec.reason).match(/Failed to fetch|NetworkError|TypeError/i);
+      throw new Error(sandbox
+        ?'Nätverksanrop blockeras i denna miljö (t.ex. Claudes förhandsvisning). Öppna filen lokalt eller via GitHub Pages.'
+        :'Hämtningen misslyckades: '+ec.reason.message);
+    }
+    const base=(ec.status==='fulfilled'?ec.value:ic.value);
+    const times=base.hourly.time.map(t=>new Date(t));
+    const pack=res=>{
+      if(res.status!=='fulfilled')return {hs:times.map(()=>null),dir:times.map(()=>null),syd:times.map(()=>null)};
+      const h=res.value.hourly;
+      const idx=new Map(h.time.map((t,i)=>[t,i]));
+      const hs=[],dir=[],syd=[];
+      base.hourly.time.forEach(t=>{
+        const i=idx.get(t);
+        const H=(i!=null)?h.wave_height[i]:null;
+        const D=(i!=null)?h.wave_direction[i]:null;
+        hs.push(H);dir.push(D);syd.push(sydKomp(H,D));
+      });
+      return {hs,dir,syd};
+    };
+    const light=new Map();
+    times.forEach(t=>{const k=dayKey(t);if(!light.has(k))light.set(k,lightWindow(t));});
+    DATA={times,ec:pack(ec),ic:pack(ic),light};
+    lastFetch=Date.now();
+    buildDays();
+    updateNextInfo();
+  }catch(e){
+    $('nextup').textContent='Fel: '+e.message;
+    $('nextup').className='nextup err';
+  }
+}
+
+/* ---------- Windy-länk ---------- */
+function windyUrl(t){
+  const ts=t.getUTCFullYear()+'-'+String(t.getUTCMonth()+1).padStart(2,'0')+'-'+
+           String(t.getUTCDate()).padStart(2,'0')+'-'+String(t.getUTCHours()).padStart(2,'0');
+  return `https://www.windy.com/?waves,${ts},${LAT},${LON},9`;
+}
+
+/* ---------- dagskort ---------- */
+function buildDays(){
+  const box=$('days');box.innerHTML='';
+  if(!DATA)return;
+  const groups=new Map();
+  DATA.times.forEach((t,i)=>{
+    const k=dayKey(t);
+    if(!groups.has(k))groups.set(k,[]);
+    groups.get(k).push(i);
+  });
+  [...groups.entries()].forEach(([k,idx])=>{
+    // hoppa över dagar helt utan data (bortom modellernas räckvidd)
+    const hasData=idx.some(i=>DATA.ec.hs[i]!=null||DATA.ic.hs[i]!=null);
+    if(!hasData)return;
+    const t0=DATA.times[idx[0]];
+    let best=null,bi=-1,bm='';
+    idx.forEach(i=>{
+      if(!isLight(DATA.times[i]))return;
+      [['ECMWF','ec'],['ICON','ic']].forEach(([tag,m])=>{
+        const v=DATA[m].syd[i];
+        if(v!=null&&(best==null||v>best)){best=v;bi=i;bm=tag;}
+      });
+    });
+    const el=document.createElement('div');
+    el.className='day '+level(best);
+    const head=`<div class="dn">${DAYS[t0.getDay()]}</div><div class="dd">${t0.getDate()}/${t0.getMonth()+1}</div>`;
+    let linkTime=null;
+    if(best==null){
+      el.innerHTML=head+`<div class="nodata">ingen data</div>`;
+    }else if(best<1.0){
+      el.innerHTML=head+`<div class="pancake" role="img" aria-label="platt – under 1 meter">🥞</div>`;
+      linkTime=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate(),12,0); // mitt på dagen
+    }else{
+      const tMax=DATA.times[bi];
+      const dir=DATA[bm==='ECMWF'?'ec':'ic'].dir[bi];
+      const arrow=dir==null?'':`<span class="arrow" style="transform:rotate(${dir+180}deg)" title="vågriktning ${Math.round(dir)}°">↑</span> ${Math.round(dir)}°`;
+      el.innerHTML=head+
+        `<div class="big">${best.toFixed(2).replace('.',',')}<span class="unit"> m</span></div>`+
+        `<div class="at">kl ${fmtHM(tMax)}</div>`+
+        `<div class="meta">${arrow} · ${bm}</div>`;
+      linkTime=tMax; // klockslaget för modellen med störst värde
+    }
+    if(linkTime){
+      el.classList.add('link');
+      el.setAttribute('role','link');
+      el.setAttribute('tabindex','0');
+      el.title='Öppna i Windy';
+      const open=()=>window.open(windyUrl(linkTime),'_blank','noopener');
+      el.addEventListener('click',open);
+      el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+    }
+    box.appendChild(el);
+  });
+}
+
+/* senaste tillgängliga modellkörning */
+function lastAvail(runsUTC,delayH){
+  const now=new Date();
+  let best=null;
+  for(let d=-2;d<=0;d++){
+    for(const r of runsUTC){
+      const av=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+d,r+delayH,0));
+      if(av<=now&&(best==null||av>best))best=av;
+    }
+  }
+  return best;
+}
+function maybeRefresh(){
+  const la=Math.max(lastAvail([0,6,12,18],8)?.getTime()||0, lastAvail([0,12],5)?.getTime()||0);
+  if(lastFetch<la)load();   // ny modellkörning har landat sedan senaste hämtning
+}
+setInterval(maybeRefresh,60e3);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeRefresh();});
+window.addEventListener('focus',maybeRefresh);
+
+load();                 // hämtar vid öppning
+updateNextInfo();
+</script>
+</body>
+</html>
