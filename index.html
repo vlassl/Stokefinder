@@ -47,7 +47,7 @@ body{
   font-family:'Archivo',sans-serif;
   color:var(--foam);
 }
-.wrap{max-width:760px;margin:0 auto;padding:12px 14px 40px}
+.wrap{max-width:760px;margin:0 auto;padding:12px 14px calc(40px + env(safe-area-inset-bottom))}
 
 /* ---------- himmel + horisont + sol ---------- */
 .sky{
@@ -64,7 +64,7 @@ body{
   /* platt affischsol – ingen glöd */
 }
 @media(max-width:480px){.sun{width:84px;height:84px;bottom:-42px;right:5%}}
-.skyw{padding-top:12px;padding-bottom:16px}
+.skyw{padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:16px}
 
 /* ---------- header ---------- */
 header{position:relative;z-index:1}
@@ -145,7 +145,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.27</div>
+      <div class="ver">v0.28</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
