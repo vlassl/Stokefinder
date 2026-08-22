@@ -30,7 +30,8 @@
   --lv1:#F7E29C;  --lv1-tx:#7A5D00;
   --lv2:#C3E4A4;  --lv2-tx:#345C20;
   --lv3:#6DBB6D;  --lv3-tx:#153F15;
-  --lv4:#C7A4E0;  --lv4-tx:#4A1E6E;
+  --lv4:#A87DD6;  --lv4-tx:#2E0F52;
+  --lv5:#1B1512;  --lv5-tx:#F5EFE6;   /* >= 2,5    svart    */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;background:var(--sea)}
@@ -106,6 +107,11 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .day.lv2{background:var(--lv2)} .day.lv2 .big{color:var(--lv2-tx)}
 .day.lv3{background:var(--lv3)} .day.lv3 .big{color:var(--lv3-tx)}
 .day.lv4{background:var(--lv4)} .day.lv4 .big{color:var(--lv4-tx)}
+.day.lv5{background:var(--lv5)} .day.lv5 .big{color:var(--lv5-tx)}
+.day.lv5{color:#F5EFE6}
+.day.lv5 .strip{box-shadow:inset 0 0 0 1px rgba(245,239,230,.35)}
+.day.lv5 .strip .tk{background:#F5EFE6}
+.day.lv5 .strip .tk.g{background:rgba(245,239,230,.5)}
 .day .dn{font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
 .day .dd{font-size:10px;opacity:.6}
 .day .big{font:600 20px/1.1 'IBM Plex Mono',monospace;margin-top:3px}
@@ -114,6 +120,10 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .day .meta{font:500 8px 'IBM Plex Mono',monospace;opacity:.65;margin-top:auto;padding-top:3px}
 .day .arrow{display:inline-block;font-size:13px}
 .day .nodata{font-size:11px;opacity:.6;margin:auto 0}
+.strip{display:flex;height:10px;border-radius:4px;overflow:hidden;position:relative;align-self:stretch;margin-top:5px;box-shadow:inset 0 0 0 1px rgba(27,21,18,.18)}
+.strip i{flex:1}
+.strip .tk{position:absolute;top:0;bottom:0;width:1.5px;background:#1B1512}
+.strip .tk.g{width:1px;background:rgba(27,21,18,.4)}
 .day .pancake{font-size:32px;line-height:1;margin:auto 0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
 .day.link{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
 .day.link:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.24)}
@@ -122,7 +132,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 
 /* ---------- färgskala + uppdateringsinfo ---------- */
 .scale{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font:500 10px 'IBM Plex Mono',monospace;color:#1B1512}
-.scale .s{display:flex;align-items:center;gap:5px}
+.scale .s{display:flex;align-items:center;gap:5px;background:var(--sea);padding:2px 7px 2px 3px;border-radius:5px}
 .scale .b{width:16px;height:12px;border-radius:3px}
 .nextup{font:500 11px 'IBM Plex Mono',monospace;color:#1B1512;text-align:right}
 .nextup.err{color:#5C0E0E;font-weight:600}
@@ -151,7 +161,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.29</div>
+      <div class="ver">v0.33</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -170,7 +180,8 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="s"><span class="b" style="background:var(--lv1)"></span>1,0–1,2</div>
   <div class="s"><span class="b" style="background:var(--lv2)"></span>1,3–1,4</div>
   <div class="s"><span class="b" style="background:var(--lv3)"></span>1,5–1,7</div>
-  <div class="s"><span class="b" style="background:var(--lv4)"></span>≥ 1,8 m</div>
+  <div class="s"><span class="b" style="background:var(--lv4)"></span>1,8–2,4</div>
+  <div class="s"><span class="b" style="background:var(--lv5)"></span>≥ 2,5 m</div>
 </div>
 
 <details class="info">
@@ -206,7 +217,8 @@ function level(v){
   if(v<1.3)return 'lv1';
   if(v<1.5)return 'lv2';
   if(v<1.8)return 'lv3';
-  return 'lv4';
+  if(v<2.5)return 'lv4';
+  return 'lv5';
 }
 
 /* ---------- civil gryning/skymning ---------- */
@@ -370,9 +382,30 @@ function buildDays(){
       const tMax=DATA.times[bi];
       const dir=DATA[bm==='ECMWF'?'ec':'ic'].dir[bi];
       const arrow=dir==null?'':`<span class="arrow" style="transform:rotate(${dir+180}deg)" title="vågriktning ${Math.round(dir)}°">↑</span> ${Math.round(dir)}°`;
+      // timremsa: first light -> last light, en färgcell per ljus timme
+      const w=DATA.light.get(k);
+      let strip='';
+      if(w&&w.dawn&&w.dusk){
+        const lightIdx=idx.filter(i=>isLight(DATA.times[i]));
+        const cells=lightIdx.map(i=>{
+          let v=null;
+          ['ec','ic'].forEach(m=>{const x=DATA[m].syd[i];if(x!=null&&(v==null||x>v))v=x;});
+          return v==null?'<i style="background:transparent"></i>'
+                        :`<i style="background:var(--${level(v)})"></i>`;
+        }).join('');
+        const span=w.dusk-w.dawn;
+        const ticks=[9,12,15,18,22].map(h=>{
+          const tt=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate(),h,0);
+          const f=(tt-w.dawn)/span;
+          if(f<=0.02||f>=0.98)return '';
+          return `<span class="tk${h===12?'':' g'}" style="left:${(f*100).toFixed(1)}%"></span>`;
+        }).join('');
+        strip=`<div class="strip">${cells}${ticks}</div>`;
+      }
       el.innerHTML=head+
         `<div class="big">${best.toFixed(2).replace('.',',')}<span class="unit"> m</span></div>`+
         `<div class="at">kl ${fmtHM(tMax)}</div>`+
+        strip+
         `<div class="meta">${arrow} · ${bm}</div>`;
       linkTime=tMax; // klockslaget för modellen med störst värde
     }
