@@ -47,6 +47,12 @@ body{
   font-family:'Archivo',sans-serif;
   color:var(--foam);
 }
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;
+  height:env(safe-area-inset-top);
+  background:var(--sky-pink);
+  z-index:50;
+}
 .wrap{max-width:760px;margin:0 auto;padding:12px 14px calc(40px + env(safe-area-inset-bottom))}
 
 /* ---------- himmel + horisont + sol ---------- */
@@ -145,7 +151,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.28</div>
+      <div class="ver">v0.29</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
