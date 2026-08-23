@@ -135,6 +135,14 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .day .cr{right:6px}
 .day .pancake{font-size:32px;line-height:1;margin:auto 0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
 .day.link{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.day{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#shareov{position:fixed;inset:0;background:rgba(27,21,18,.82);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px}
+#shareov img{max-width:92%;max-height:72vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#shareov .btns{display:flex;gap:10px}
+#shareov button{font:600 14px 'IBM Plex Mono',monospace;padding:10px 22px;border:none;border-radius:9px;cursor:pointer}
+#shareov .share{background:#EB0D6E;color:#F5EFE6}
+#shareov .close{background:#F5EFE6;color:#1B1512}
+#sharetoast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1B1512;color:#F5EFE6;font:500 12px 'IBM Plex Mono',monospace;padding:8px 16px;border-radius:8px;z-index:101}
 .day.link:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.24)}
 .day.link:active{transform:translateY(0)}
 .day.link:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
@@ -170,7 +178,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.36</div>
+      <div class="ver">v0.41</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -475,13 +483,198 @@ function buildDays(){
       el.setAttribute('role','link');
       el.setAttribute('tabindex','0');
       el.title='Öppna i Windy';
-      const open=()=>window.open(windyUrl(linkTime),'_blank','noopener');
+      const open=()=>{if(lpFired){lpFired=false;return;}window.open(windyUrl(linkTime),'_blank','noopener');};
       el.addEventListener('click',open);
       el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
     }
-    box.appendChild(el);
+    el.dataset.k=k;box.appendChild(el);
   });
 }
+
+/* ---------- långtryck: dela bild med dagen inringad ---------- */
+let lpFired=false,lpTimer=null,lpStart=null;
+function rrect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+async function renderShare(selK){
+  try{await document.fonts.ready;}catch(e){}
+  const M=20,G=12,COLS=3,W=900,CW=(W-2*M-(COLS-1)*G)/COLS,CH=172,HDR=140;
+  // samla dagarna med samma logik som korten
+  const groups=new Map();
+  DATA.times.forEach((t,i)=>{const k=dayKey(t);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(i);});
+  const days=[];
+  for(const [k,idx] of groups){
+    if(days.length>=15)break;
+    if(!idx.some(i=>DATA.ec.hs[i]!=null||DATA.ic.hs[i]!=null))continue;
+    const t0=DATA.times[idx[0]],w=DATA.light.get(k);
+    let best=null,bi=-1,bm='';
+    idx.forEach(i=>{
+      if(!isLight(DATA.times[i]))return;
+      [['ECMWF','ec'],['ICON','ic']].forEach(([tag,m])=>{
+        const v=DATA[m].syd[i];
+        if(v!=null&&(best==null||v>best)){best=v;bi=i;bm=tag;}
+      });
+    });
+    days.push({k,idx,t0,w,best,bi,bm});
+  }
+  const rows=Math.ceil(days.length/COLS)||1;
+  const H=HDR+14+rows*(CH+G)+14;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const c=cv.getContext('2d');
+  const LV={lv0:'#E3E8E7',lv1:'#F7941D',lv2:'#F7CE1B',lv3:'#12B76A',lv4:'#0E8A5F',lv5:'#5B2BD9'};
+  const TX={lv0:'#7A8A90',lv1:'#1B1512',lv2:'#1B1512',lv3:'#1B1512',lv4:'#F5EFE6',lv5:'#F5EFE6'};
+  const INK='#1B1512',LIGHT='#F5EFE6',GRAY='#8A8F8E';
+  c.fillStyle='#E84425';c.fillRect(0,0,W,H);
+  c.fillStyle='#EB0D6E';c.fillRect(0,0,W,HDR);
+  c.fillStyle='#FFCB2E';c.beginPath();c.arc(W-128,HDR,74,Math.PI,2*Math.PI);c.fill();
+  c.textBaseline='middle';
+  c.fillStyle=INK;c.textAlign='left';
+  c.font="500 46px Oswald, 'Arial Narrow', sans-serif";
+  c.fillText('The Endless Stokefinder',M+4,HDR/2+2);
+  const lw=lightWindow(new Date());
+  c.font="500 17px 'IBM Plex Mono', monospace";c.fillStyle=GRAY;c.textAlign='right';
+  c.fillText(`first light ${fmtHM(lw.dawn)} \u00b7 last light ${fmtHM(lw.dusk)}`,W-14,24);
+  function arr(cx,cy,ang,color){
+    const a=(ang+180)%360*Math.PI/180,dx=Math.sin(a),dy=-Math.cos(a),L=11;
+    c.strokeStyle=color;c.lineWidth=2.6;c.lineCap='round';
+    c.beginPath();c.moveTo(cx-dx*L,cy-dy*L);c.lineTo(cx+dx*L,cy+dy*L);c.stroke();
+    const ha=150*Math.PI/180;
+    for(const s of[-1,1]){
+      const hx=dx*Math.cos(ha*s)-dy*Math.sin(ha*s),hy=dx*Math.sin(ha*s)+dy*Math.cos(ha*s);
+      c.beginPath();c.moveTo(cx+dx*L,cy+dy*L);c.lineTo(cx+dx*L+hx*7,cy+dy*L+hy*7);c.stroke();
+    }
+  }
+  let sel=null;
+  days.forEach((D,n)=>{
+    const x=M+(n%COLS)*(CW+G),y=HDR+14+((n/COLS)|0)*(CH+G);
+    const lvName=level(D.best),bg=LV[lvName];
+    const dark=(lvName==='lv4'||lvName==='lv5');
+    const fg=dark?LIGHT:INK;
+    rrect(c,x,y,CW,CH,14);c.fillStyle=bg;c.fill();
+    c.textAlign='center';
+    c.fillStyle=fg;c.font="600 21px 'IBM Plex Mono', monospace";
+    c.fillText(DAYS[D.t0.getDay()].toUpperCase(),x+CW/2,y+24);
+    c.globalAlpha=.6;c.font="500 16px 'IBM Plex Mono', monospace";
+    c.fillText(D.t0.getDate()+'/'+(D.t0.getMonth()+1),x+CW/2,y+45);
+    c.globalAlpha=1;
+    if(D.best==null){
+      c.globalAlpha=.6;c.font="500 18px 'IBM Plex Mono', monospace";
+      c.fillText('ingen data',x+CW/2,y+CH/2+8);c.globalAlpha=1;
+    }else if(D.best<1.0){
+      c.font="62px sans-serif";
+      c.fillText('\ud83e\udd5e',x+CW/2,y+CH/2+14);
+    }else{
+      const tMax=DATA.times[D.bi];
+      const dir=DATA[D.bm==='ECMWF'?'ec':'ic'].dir[D.bi];
+      const val=D.best.toFixed(2).replace('.',',');
+      c.font="600 42px 'IBM Plex Mono', monospace";
+      const bw=c.measureText(val).width;
+      const x0=x+CW/2-(bw+26)/2;
+      c.textAlign='left';c.fillStyle=TX[lvName];
+      c.fillText(val,x0,y+74);
+      c.font="500 17px 'IBM Plex Mono', monospace";
+      c.fillText(' m',x0+bw,y+80);
+      c.textAlign='center';c.fillStyle=fg;
+      c.font="500 19px 'IBM Plex Mono', monospace";
+      c.fillText('kl '+fmtHM(tMax),x+CW/2,y+103);
+      if(dir!=null){
+        c.font="500 16px 'IBM Plex Mono', monospace";
+        const mt=Math.round(dir)+'\u00b0 \u00b7 '+D.bm;
+        const mw=c.measureText(mt).width;
+        arr(x+CW/2-mw/2-16,y+126,dir,fg);
+        c.globalAlpha=.75;c.fillText(mt,x+CW/2+8,y+126);c.globalAlpha=1;
+      }
+      if(D.w&&D.w.dawn&&D.w.dusk){
+        const li=D.idx.filter(i=>isLight(DATA.times[i]));
+        if(li.length){
+          const sx=x+10,sw=CW-20,sy=y+CH-28,sh=16,c2=sw/li.length;
+          li.forEach((i,j)=>{
+            let v=null;
+            ['ec','ic'].forEach(m=>{const q=DATA[m].syd[i];if(q!=null&&(v==null||q>v))v=q;});
+            if(v!=null){c.fillStyle=LV[level(v)];c.fillRect(sx+j*c2,sy,Math.ceil(c2),sh);}
+          });
+          const span=D.w.dusk-D.w.dawn;
+          [[6,'g'],[9,'g'],[12,'b'],[15,'g'],[18,'g'],[22,'g']].forEach(([h,cl])=>{
+            const tt=new Date(D.t0.getFullYear(),D.t0.getMonth(),D.t0.getDate(),h,0);
+            const f=(tt-D.w.dawn)/span;
+            if(f<=0.02||f>=0.98)return;
+            c.fillStyle=cl==='b'?(dark?LIGHT:INK):(dark?'rgba(245,239,230,.55)':'rgba(27,21,18,.4)');
+            c.fillRect(sx+f*sw,sy,cl==='b'?3:2,sh);
+          });
+          const fm=(tMax-D.w.dawn)/span;
+          if(fm>0&&fm<1){c.fillStyle=dark?'#FF5C5C':'#D81A1A';c.fillRect(sx+fm*sw-1.5,sy,3.5,sh);}
+        }
+      }
+    }
+    if(D.k===selK)sel=[x,y];
+  });
+  if(sel){
+    const cx=sel[0]+CW/2,cy=sel[1]+CH/2,rx=CW/2+15,ry=CH/2+15;
+    c.strokeStyle='#D81A1A';c.lineWidth=11;c.lineCap='round';
+    [[0,0,-0.05],[4,3,0.045]].forEach(([ox,oy,rot])=>{
+      c.beginPath();c.ellipse(cx+ox,cy+oy,rx,ry,rot,0,2*Math.PI);c.stroke();
+    });
+  }
+  return cv;
+}
+async function shareDay(el){
+  try{
+    if(navigator.vibrate)navigator.vibrate(30);
+    toast('\ud83d\udcf8 skapar bild \u2026');
+    const canvas=await renderShare(el.dataset.k);
+    toast(null);
+    const ov=document.createElement('div');
+    ov.id='shareov';
+    const img=document.createElement('img');
+    img.src=canvas.toDataURL('image/png');   // data-URL: iOS langtryck ger "Spara bild/Dela"
+    img.alt='Stokefinder';
+    ov.appendChild(img);
+    const btns=document.createElement('div');btns.className='btns';
+    btns.innerHTML=`<button class="share">Dela</button><button class="close">St\u00e4ng</button>`;
+    ov.appendChild(btns);
+    const kill=()=>ov.remove();
+    ov.querySelector('.close').addEventListener('click',kill);
+    ov.addEventListener('click',e=>{if(e.target===ov)kill();});
+    ov.querySelector('.share').addEventListener('click',()=>{
+      canvas.toBlob(async blob=>{
+        const file=blob?new File([blob],'stokefinder.png',{type:'image/png'}):null;
+        if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+          try{await navigator.share({files:[file],title:'The Endless Stokefinder'});kill();return;}catch(e){}
+        }
+        // reserv: ladda ner via data-URL (blockeras inte av sandl\u00e5dor)
+        try{
+          const a=document.createElement('a');
+          a.href=canvas.toDataURL('image/png');
+          a.download='stokefinder.png';
+          a.click();
+        }catch(e){alert('Delning st\u00f6ds inte i den h\u00e4r milj\u00f6n \u2013 testa i Safari.');}
+      },'image/png');
+    });
+    document.body.appendChild(ov);
+  }catch(e){
+    toast(null);
+    alert('Kunde inte skapa bilden.');
+  }
+}
+function toast(msg){
+  let t=document.getElementById('sharetoast');
+  if(!msg){if(t)t.remove();return;}
+  if(!t){t=document.createElement('div');t.id='sharetoast';document.body.appendChild(t);}
+  t.textContent=msg;
+}
+document.getElementById('days').addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.day');
+  if(!el)return;
+  lpStart=[e.clientX,e.clientY];
+  clearTimeout(lpTimer);
+  lpTimer=setTimeout(()=>{lpFired=true;shareDay(el);},550);
+});
+['pointerup','pointercancel'].forEach(ev=>
+  document.addEventListener(ev,()=>clearTimeout(lpTimer)));
+document.addEventListener('pointermove',e=>{
+  if(lpStart&&Math.hypot(e.clientX-lpStart[0],e.clientY-lpStart[1])>10)clearTimeout(lpTimer);
+});
+document.getElementById('days').addEventListener('contextmenu',e=>{
+  if(e.target.closest('.day'))e.preventDefault();
+});
 
 /* senaste tillgängliga modellkörning */
 function lastAvail(runsUTC,delayH){
