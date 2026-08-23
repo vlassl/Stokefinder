@@ -142,6 +142,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 #shareov button{font:600 14px 'IBM Plex Mono',monospace;padding:10px 22px;border:none;border-radius:9px;cursor:pointer}
 #shareov .share{background:#EB0D6E;color:#F5EFE6}
 #shareov .close{background:#F5EFE6;color:#1B1512}
+#shareov .hint{color:#F5EFE6;font:500 11px 'IBM Plex Mono',monospace;opacity:.75;text-align:center}
 #sharetoast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1B1512;color:#F5EFE6;font:500 12px 'IBM Plex Mono',monospace;padding:8px 16px;border-radius:8px;z-index:101}
 .day.link:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.24)}
 .day.link:active{transform:translateY(0)}
@@ -178,7 +179,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.41</div>
+      <div class="ver">v0.42</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -494,7 +495,7 @@ function buildDays(){
 /* ---------- långtryck: dela bild med dagen inringad ---------- */
 let lpFired=false,lpTimer=null,lpStart=null;
 function rrect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
-async function renderShare(selK){
+async function renderShare(selSet){
   try{await document.fonts.ready;}catch(e){}
   const M=20,G=12,COLS=3,W=900,CW=(W-2*M-(COLS-1)*G)/COLS,CH=172,HDR=140;
   // samla dagarna med samma logik som korten
@@ -542,7 +543,7 @@ async function renderShare(selK){
       c.beginPath();c.moveTo(cx+dx*L,cy+dy*L);c.lineTo(cx+dx*L+hx*7,cy+dy*L+hy*7);c.stroke();
     }
   }
-  let sel=null;
+  const rects=[];
   days.forEach((D,n)=>{
     const x=M+(n%COLS)*(CW+G),y=HDR+14+((n/COLS)|0)*(CH+G);
     const lvName=level(D.best),bg=LV[lvName];
@@ -604,45 +605,62 @@ async function renderShare(selK){
         }
       }
     }
-    if(D.k===selK)sel=[x,y];
+    rects.push({k:D.k,x,y});
   });
-  if(sel){
-    const cx=sel[0]+CW/2,cy=sel[1]+CH/2,rx=CW/2+15,ry=CH/2+15;
-    c.strokeStyle='#D81A1A';c.lineWidth=11;c.lineCap='round';
+  c.strokeStyle='#D81A1A';c.lineWidth=11;c.lineCap='round';
+  rects.forEach(q=>{
+    if(!selSet.has(q.k))return;
+    const cx=q.x+CW/2,cy=q.y+CH/2,rx=CW/2+15,ry=CH/2+15;
     [[0,0,-0.05],[4,3,0.045]].forEach(([ox,oy,rot])=>{
       c.beginPath();c.ellipse(cx+ox,cy+oy,rx,ry,rot,0,2*Math.PI);c.stroke();
     });
-  }
-  return cv;
+  });
+  return {cv,rects,CW,CH};
 }
 async function shareDay(el){
   try{
     if(navigator.vibrate)navigator.vibrate(30);
     toast('\ud83d\udcf8 skapar bild \u2026');
-    const canvas=await renderShare(el.dataset.k);
+    const sel=new Set([el.dataset.k]);
+    let cur=await renderShare(sel);
     toast(null);
     const ov=document.createElement('div');
     ov.id='shareov';
     const img=document.createElement('img');
-    img.src=canvas.toDataURL('image/png');   // data-URL: iOS langtryck ger "Spara bild/Dela"
+    img.src=cur.cv.toDataURL('image/png');
     img.alt='Stokefinder';
     ov.appendChild(img);
+    const hint=document.createElement('div');
+    hint.className='hint';
+    hint.textContent='tryck p\u00e5 dagar i bilden f\u00f6r att ringa in fler / ta bort';
+    ov.appendChild(hint);
     const btns=document.createElement('div');btns.className='btns';
     btns.innerHTML=`<button class="share">Dela</button><button class="close">St\u00e4ng</button>`;
     ov.appendChild(btns);
     const kill=()=>ov.remove();
     ov.querySelector('.close').addEventListener('click',kill);
     ov.addEventListener('click',e=>{if(e.target===ov)kill();});
+    // tryck i bilden: rita in/ur dagar
+    img.addEventListener('click',async e=>{
+      const r=img.getBoundingClientRect();
+      const px=(e.clientX-r.left)*cur.cv.width/r.width;
+      const py=(e.clientY-r.top)*cur.cv.height/r.height;
+      const hit=cur.rects.find(q=>px>=q.x-8&&px<=q.x+cur.CW+8&&py>=q.y-8&&py<=q.y+cur.CH+8);
+      if(!hit)return;
+      if(sel.has(hit.k)){if(sel.size>1)sel.delete(hit.k);}else sel.add(hit.k);
+      if(navigator.vibrate)navigator.vibrate(12);
+      cur=await renderShare(sel);
+      img.src=cur.cv.toDataURL('image/png');
+    });
     ov.querySelector('.share').addEventListener('click',()=>{
-      canvas.toBlob(async blob=>{
+      cur.cv.toBlob(async blob=>{
         const file=blob?new File([blob],'stokefinder.png',{type:'image/png'}):null;
         if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
           try{await navigator.share({files:[file],title:'The Endless Stokefinder'});kill();return;}catch(e){}
         }
-        // reserv: ladda ner via data-URL (blockeras inte av sandl\u00e5dor)
         try{
           const a=document.createElement('a');
-          a.href=canvas.toDataURL('image/png');
+          a.href=cur.cv.toDataURL('image/png');
           a.download='stokefinder.png';
           a.click();
         }catch(e){alert('Delning st\u00f6ds inte i den h\u00e4r milj\u00f6n \u2013 testa i Safari.');}
