@@ -179,7 +179,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.42</div>
+      <div class="ver">v0.44</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -607,13 +607,30 @@ async function renderShare(selSet){
     }
     rects.push({k:D.k,x,y});
   });
-  c.strokeStyle='#D81A1A';c.lineWidth=11;c.lineCap='round';
-  rects.forEach(q=>{
+  // tuschring: skakig hand, varierande tjocklek, överlappande ändar
+  c.strokeStyle='#D81A1A';c.lineCap='round';c.lineJoin='round';
+  rects.forEach((q,qi)=>{
     if(!selSet.has(q.k))return;
+    let sd=qi*7919+3;
+    const rnd=()=>{sd=(sd*1103515245+12345)&0x7fffffff;return sd/0x7fffffff;};
     const cx=q.x+CW/2,cy=q.y+CH/2,rx=CW/2+15,ry=CH/2+15;
-    [[0,0,-0.05],[4,3,0.045]].forEach(([ox,oy,rot])=>{
-      c.beginPath();c.ellipse(cx+ox,cy+oy,rx,ry,rot,0,2*Math.PI);c.stroke();
-    });
+    for(let pass=0;pass<2;pass++){
+      const a0=-0.5+rnd()*0.6;
+      const a1=a0+Math.PI*2+0.3+rnd()*0.45;      // varvet slutar en bit förbi starten
+      const rot=(rnd()-0.5)*0.11;
+      c.lineWidth=8.5+rnd()*4.5;
+      c.beginPath();
+      const N=48,p1=2+rnd()*2,p2=4.4+rnd()*1.6,w1=.014+rnd()*.012;
+      for(let i=0;i<=N;i++){
+        const t=a0+(a1-a0)*i/N;
+        const wob=1+Math.sin(t*p1+sd)*w1+Math.sin(t*p2+pass*2.1)*.013;
+        const ex=Math.cos(t)*rx*wob,ey=Math.sin(t)*ry*wob;
+        const x=cx+ex*Math.cos(rot)-ey*Math.sin(rot);
+        const y=cy+ex*Math.sin(rot)+ey*Math.cos(rot);
+        i?c.lineTo(x,y):c.moveTo(x,y);
+      }
+      c.stroke();
+    }
   });
   return {cv,rects,CW,CH};
 }
@@ -656,7 +673,7 @@ async function shareDay(el){
       cur.cv.toBlob(async blob=>{
         const file=blob?new File([blob],'stokefinder.png',{type:'image/png'}):null;
         if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
-          try{await navigator.share({files:[file],title:'The Endless Stokefinder'});kill();return;}catch(e){}
+          try{await navigator.share({files:[file]});kill();return;}catch(e){}
         }
         try{
           const a=document.createElement('a');
