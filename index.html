@@ -27,11 +27,11 @@
   --foam-dim:#3D2418;
   --ink:#12303F;
   --lv0:#E3E8E7;  --lv0-tx:#7A8A90;
-  --lv1:#F7E29C;  --lv1-tx:#7A5D00;
-  --lv2:#C3E4A4;  --lv2-tx:#345C20;
-  --lv3:#6DBB6D;  --lv3-tx:#153F15;
-  --lv4:#A87DD6;  --lv4-tx:#2E0F52;
-  --lv5:#1B1512;  --lv5-tx:#F5EFE6;   /* >= 2,5    svart    */
+  --lv1:#F7941D;  --lv1-tx:#1B1512;
+  --lv2:#F7CE1B;  --lv2-tx:#1B1512;
+  --lv3:#12B76A;  --lv3-tx:#1B1512;
+  --lv4:#0E8A5F;  --lv4-tx:#F5EFE6;
+  --lv5:#5B2BD9;  --lv5-tx:#F5EFE6;   /* >= 2,5  epic-lila  */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;background:var(--sea)}
@@ -108,10 +108,10 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .day.lv3{background:var(--lv3)} .day.lv3 .big{color:var(--lv3-tx)}
 .day.lv4{background:var(--lv4)} .day.lv4 .big{color:var(--lv4-tx)}
 .day.lv5{background:var(--lv5)} .day.lv5 .big{color:var(--lv5-tx)}
-.day.lv5{color:#F5EFE6}
-.day.lv5 .strip{box-shadow:inset 0 0 0 1px rgba(245,239,230,.35)}
-.day.lv5 .strip .tk{background:#F5EFE6}
-.day.lv5 .strip .tk.g{background:rgba(245,239,230,.5)}
+.day.lv4,.day.lv5{color:#F5EFE6}
+.day.lv4 .strip,.day.lv5 .strip{box-shadow:inset 0 0 0 1px rgba(245,239,230,.35)}
+.day.lv4 .strip .tk,.day.lv5 .strip .tk{background:#F5EFE6}
+.day.lv4 .strip .tk.g,.day.lv5 .strip .tk.g{background:rgba(245,239,230,.5)}
 .day .dn{font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
 .day .dd{font-size:10px;opacity:.6}
 .day .big{font:600 20px/1.1 'IBM Plex Mono',monospace;margin-top:3px}
@@ -125,7 +125,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .strip .tk{position:absolute;top:0;bottom:0;width:1.5px;background:#1B1512}
 .strip .tk.g{width:1px;background:rgba(27,21,18,.4)}
 .strip .tk.r{width:1.5px;background:#D81A1A}
-.day.lv5 .strip .tk.r{background:#FF5C5C}
+.day.lv4 .strip .tk.r,.day.lv5 .strip .tk.r{background:#FF5C5C}
 .suninfo{display:flex;justify-content:flex-end;margin-top:8px}
 .suninfo span{font:500 10px 'IBM Plex Mono',monospace;color:#1B1512;background:var(--sea);padding:2px 7px;border-radius:5px;cursor:pointer;-webkit-user-select:none;user-select:none}
 .suninfo span.on{background:#1B1512;color:#F5EFE6}
@@ -170,7 +170,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.35</div>
+      <div class="ver">v0.36</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -410,10 +410,12 @@ function buildDays(){
     if(!groups.has(k))groups.set(k,[]);
     groups.get(k).push(i);
   });
+  let shown=0;
   [...groups.entries()].forEach(([k,idx])=>{
     // hoppa över dagar helt utan data (bortom modellernas räckvidd)
     const hasData=idx.some(i=>DATA.ec.hs[i]!=null||DATA.ic.hs[i]!=null);
-    if(!hasData)return;
+    if(!hasData||shown>=15)return;
+    shown++;
     const t0=DATA.times[idx[0]];
     const w=DATA.light.get(k);
     const corners=(showLight&&w&&w.dawn&&w.dusk)
@@ -450,15 +452,15 @@ function buildDays(){
                         :`<i style="background:var(--${level(v)})"></i>`;
         }).join('');
         const span=w.dusk-w.dawn;
-        const work=isWorkday(t0);
-        const hrs=[[9,'g'],[12,''],[15,'g'],[18,'g'],[22,'g']];
-        if(work){hrs.push([8,'r'],[17,'r']);}
-        const ticks=hrs.map(([h,cls])=>{
+        const hrs=[[6,'g'],[9,'g'],[12,''],[15,'g'],[18,'g'],[22,'g']];
+        let ticks=hrs.map(([h,cls])=>{
           const tt=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate(),h,0);
           const f=(tt-w.dawn)/span;
           if(f<=0.02||f>=0.98)return '';
           return `<span class="tk${cls?' '+cls:''}" style="left:${(f*100).toFixed(1)}%"></span>`;
         }).join('');
+        const fMax=(tMax-w.dawn)/span;              // rött streck vid tiden för dagens max
+        if(fMax>0&&fMax<1)ticks+=`<span class="tk r" style="left:${(fMax*100).toFixed(1)}%"></span>`;
         strip=`<div class="strip">${cells}${ticks}</div>`;
       }
       el.innerHTML=corners+head+
