@@ -124,7 +124,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .strip i{flex:1}
 .strip .tk{position:absolute;top:0;bottom:0;width:1.5px;background:#1B1512}
 .strip .tk.g{width:1px;background:rgba(27,21,18,.4)}
-.strip .tk.r{width:1.5px;background:#D81A1A}
+.strip .tk.r{width:2.5px;background:#D81A1A;transform:translateX(-50%);border-radius:1px}
 .day.lv4 .strip .tk.r,.day.lv5 .strip .tk.r{background:#FF5C5C}
 .suninfo{display:flex;justify-content:flex-end;margin-top:8px}
 .suninfo span{font:500 10px 'IBM Plex Mono',monospace;color:#1B1512;background:var(--sea);padding:2px 7px;border-radius:5px;cursor:pointer;-webkit-user-select:none;user-select:none}
@@ -179,7 +179,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.45</div>
+      <div class="ver">v0.46</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -500,8 +500,9 @@ function buildDays(){
           if(f<=0.02||f>=0.98)return '';
           return `<span class="tk${cls?' '+cls:''}" style="left:${(f*100).toFixed(1)}%"></span>`;
         }).join('');
-        const fMax=(tMax-w.dawn)/span;              // rött streck vid tiden för dagens max
-        if(fMax>0&&fMax<1)ticks+=`<span class="tk r" style="left:${(fMax*100).toFixed(1)}%"></span>`;
+        // rött streck vid tiden för dagens max – klamrat så det syns även vid first/last light
+        const fMax=Math.min(1,Math.max(0,(tMax-w.dawn)/span));
+        ticks+=`<span class="tk r" style="left:calc(${(fMax*100).toFixed(1)}% ${fMax<0.5?'+':'-'} 1.5px)"></span>`;
         strip=`<div class="strip">${cells}${ticks}</div>`;
       }
       el.innerHTML=corners+head+
@@ -647,8 +648,9 @@ async function renderShare(selSet){
             c.fillStyle=cl==='b'?(dark?LIGHT:INK):(dark?'rgba(245,239,230,.55)':'rgba(27,21,18,.4)');
             c.fillRect(sx+f*sw,sy,cl==='b'?3:2,sh);
           });
-          const fm=(tMax-D.w.dawn)/span;
-          if(fm>0&&fm<1){c.fillStyle=dark?'#FF5C5C':'#D81A1A';c.fillRect(sx+fm*sw-1.5,sy,3.5,sh);}
+          const fm=Math.min(1,Math.max(0,(tMax-D.w.dawn)/span));
+          c.fillStyle=dark?'#FF5C5C':'#D81A1A';
+          c.fillRect(Math.min(sx+sw-4,Math.max(sx,sx+fm*sw-2)),sy,4,sh);
         }
       }
     }
