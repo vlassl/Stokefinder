@@ -179,7 +179,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.44</div>
+      <div class="ver">v0.45</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -410,6 +410,22 @@ function windyUrl(t){
 }
 
 /* ---------- dagskort ---------- */
+/* effektiv våghöjd (sektorfiltrerad) vid godtycklig tidpunkt – linjär interpolation */
+function effAtTime(m,t){
+  const T=DATA.times;if(!T.length)return null;
+  const f=(t-T[0])/36e5;
+  if(f<0||f>T.length-1)return null;
+  const i0=Math.floor(f),i1=Math.min(i0+1,T.length-1);
+  const v0=DATA[m].syd[i0],v1=DATA[m].syd[i1];
+  if(v0==null&&v1==null)return null;
+  if(v0==null)return v1;
+  if(v1==null)return v0;
+  return v0+(v1-v0)*(f-i0);
+}
+function dirNear(m,t){
+  const i=Math.round((t-DATA.times[0])/36e5);
+  return (i>=0&&i<DATA.times.length)?DATA[m].dir[i]:null;
+}
 function buildDays(){
   const box=$('days');box.innerHTML='';
   if(!DATA)return;
@@ -429,14 +445,23 @@ function buildDays(){
     const w=DATA.light.get(k);
     const corners=(showLight&&w&&w.dawn&&w.dusk)
       ?`<span class="cl">${fmtHM(w.dawn)}</span><span class="cr">${fmtHM(w.dusk)}</span>`:'';
-    let best=null,bi=-1,bm='';
+    let best=null,bi=-1,bm='',bt=null;
     idx.forEach(i=>{
       if(!isLight(DATA.times[i]))return;
       [['ECMWF','ec'],['ICON','ic']].forEach(([tag,m])=>{
         const v=DATA[m].syd[i];
-        if(v!=null&&(best==null||v>best)){best=v;bi=i;bm=tag;}
+        if(v!=null&&(best==null||v>best)){best=v;bi=i;bm=tag;bt=DATA.times[i];}
       });
     });
+    if(w&&w.dawn&&w.dusk){
+      // interpolerade värden exakt vid first/last light
+      [w.dawn,w.dusk].forEach(tt=>{
+        [['ECMWF','ec'],['ICON','ic']].forEach(([tag,m])=>{
+          const v=effAtTime(m,tt);
+          if(v!=null&&(best==null||v>best)){best=v;bi=-1;bm=tag;bt=tt;}
+        });
+      });
+    }
     const el=document.createElement('div');
     el.className='day '+level(best);
     const head=`<div class="dn">${DAYS[t0.getDay()]}</div><div class="dd">${t0.getDate()}/${t0.getMonth()+1}</div>`;
@@ -447,20 +472,27 @@ function buildDays(){
       el.innerHTML=corners+head+`<div class="pancake" role="img" aria-label="platt – under 1 meter">🥞</div>`;
       linkTime=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate(),12,0); // mitt på dagen
     }else{
-      const tMax=DATA.times[bi];
-      const dir=DATA[bm==='ECMWF'?'ec':'ic'].dir[bi];
+      const tMax=bt;
+      const dir=bi>=0?DATA[bm==='ECMWF'?'ec':'ic'].dir[bi]
+                     :dirNear(bm==='ECMWF'?'ec':'ic',bt);
       const arrow=dir==null?'':`<span class="arrow" style="transform:rotate(${dir+180}deg)" title="vågriktning ${Math.round(dir)}°">↑</span> ${Math.round(dir)}°`;
       // timremsa: first light -> last light, en färgcell per ljus timme
       let strip='';
       if(w&&w.dawn&&w.dusk){
-        const lightIdx=idx.filter(i=>isLight(DATA.times[i]));
-        const cells=lightIdx.map(i=>{
-          let v=null;
-          ['ec','ic'].forEach(m=>{const x=DATA[m].syd[i];if(x!=null&&(v==null||x>v))v=x;});
-          return v==null?'<i style="background:transparent"></i>'
-                        :`<i style="background:var(--${level(v)})"></i>`;
-        }).join('');
         const span=w.dusk-w.dawn;
+        // segment dawn -> hela timmar -> dusk, bredd efter tid,
+        // färg från interpolerat värde i segmentets mitt
+        let cells='',tcur=w.dawn;
+        while(tcur<w.dusk){
+          const nxt=new Date(Math.min(+w.dusk,(Math.floor(+tcur/36e5)+1)*36e5));
+          const mid=new Date((+tcur+ +nxt)/2);
+          let v=null;
+          ['ec','ic'].forEach(m=>{const x=effAtTime(m,mid);if(x!=null&&(v==null||x>v))v=x;});
+          const wp=((nxt-tcur)/span*100).toFixed(2);
+          cells+=v==null?`<i style="flex:0 0 ${wp}%;background:transparent"></i>`
+                        :`<i style="flex:0 0 ${wp}%;background:var(--${level(v)})"></i>`;
+          tcur=nxt;
+        }
         const hrs=[[6,'g'],[9,'g'],[12,''],[15,'g'],[18,'g'],[22,'g']];
         let ticks=hrs.map(([h,cls])=>{
           const tt=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate(),h,0);
@@ -506,15 +538,23 @@ async function renderShare(selSet){
     if(days.length>=15)break;
     if(!idx.some(i=>DATA.ec.hs[i]!=null||DATA.ic.hs[i]!=null))continue;
     const t0=DATA.times[idx[0]],w=DATA.light.get(k);
-    let best=null,bi=-1,bm='';
+    let best=null,bi=-1,bm='',bt=null;
     idx.forEach(i=>{
       if(!isLight(DATA.times[i]))return;
       [['ECMWF','ec'],['ICON','ic']].forEach(([tag,m])=>{
         const v=DATA[m].syd[i];
-        if(v!=null&&(best==null||v>best)){best=v;bi=i;bm=tag;}
+        if(v!=null&&(best==null||v>best)){best=v;bi=i;bm=tag;bt=DATA.times[i];}
       });
     });
-    days.push({k,idx,t0,w,best,bi,bm});
+    if(w&&w.dawn&&w.dusk){
+      [w.dawn,w.dusk].forEach(tt=>{
+        [['ECMWF','ec'],['ICON','ic']].forEach(([tag,m])=>{
+          const v=effAtTime(m,tt);
+          if(v!=null&&(best==null||v>best)){best=v;bi=-1;bm=tag;bt=tt;}
+        });
+      });
+    }
+    days.push({k,idx,t0,w,best,bi,bm,bt});
   }
   const rows=Math.ceil(days.length/COLS)||1;
   const H=HDR+14+rows*(CH+G)+14;
@@ -563,8 +603,9 @@ async function renderShare(selSet){
       c.font="62px sans-serif";
       c.fillText('\ud83e\udd5e',x+CW/2,y+CH/2+14);
     }else{
-      const tMax=DATA.times[D.bi];
-      const dir=DATA[D.bm==='ECMWF'?'ec':'ic'].dir[D.bi];
+      const tMax=D.bt;
+      const dir=D.bi>=0?DATA[D.bm==='ECMWF'?'ec':'ic'].dir[D.bi]
+                       :dirNear(D.bm==='ECMWF'?'ec':'ic',D.bt);
       const val=D.best.toFixed(2).replace('.',',');
       c.font="600 42px 'IBM Plex Mono', monospace";
       const bw=c.measureText(val).width;
@@ -584,15 +625,21 @@ async function renderShare(selSet){
         c.globalAlpha=.75;c.fillText(mt,x+CW/2+8,y+126);c.globalAlpha=1;
       }
       if(D.w&&D.w.dawn&&D.w.dusk){
-        const li=D.idx.filter(i=>isLight(DATA.times[i]));
-        if(li.length){
-          const sx=x+10,sw=CW-20,sy=y+CH-28,sh=16,c2=sw/li.length;
-          li.forEach((i,j)=>{
-            let v=null;
-            ['ec','ic'].forEach(m=>{const q=DATA[m].syd[i];if(q!=null&&(v==null||q>v))v=q;});
-            if(v!=null){c.fillStyle=LV[level(v)];c.fillRect(sx+j*c2,sy,Math.ceil(c2),sh);}
-          });
+        {
+          const sx=x+10,sw=CW-20,sy=y+CH-28,sh=16;
           const span=D.w.dusk-D.w.dawn;
+          let tcur=D.w.dawn;
+          while(tcur<D.w.dusk){
+            const nxt=new Date(Math.min(+D.w.dusk,(Math.floor(+tcur/36e5)+1)*36e5));
+            const mid=new Date((+tcur+ +nxt)/2);
+            let v=null;
+            ['ec','ic'].forEach(m=>{const q=effAtTime(m,mid);if(q!=null&&(v==null||q>v))v=q;});
+            if(v!=null){
+              c.fillStyle=LV[level(v)];
+              c.fillRect(sx+(tcur-D.w.dawn)/span*sw,sy,(nxt-tcur)/span*sw+0.7,sh);
+            }
+            tcur=nxt;
+          }
           [[6,'g'],[9,'g'],[12,'b'],[15,'g'],[18,'g'],[22,'g']].forEach(([h,cl])=>{
             const tt=new Date(D.t0.getFullYear(),D.t0.getMonth(),D.t0.getDate(),h,0);
             const f=(tt-D.w.dawn)/span;
