@@ -36,7 +36,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;background:var(--sea)}
 /* bastonen ligger som gradientlager så den inte kan skrivas över av mörkt läge */
-html,body{
+html,body{overscroll-behavior-y:contain;
   min-height:100%;
   background-color:var(--sea);
   background-image:
@@ -126,7 +126,9 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .strip .tk.g{width:1px;background:rgba(27,21,18,.4)}
 .strip .tk.r{width:2.5px;background:#D81A1A;transform:translateX(-50%);border-radius:1px}
 .day.lv4 .strip .tk.r,.day.lv5 .strip .tk.r{background:#FF5C5C}
-.suninfo{display:flex;justify-content:flex-end;margin-top:8px}
+.suninfo{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.wt{visibility:hidden;display:flex;align-items:center;gap:5px;font:600 13px 'IBM Plex Mono',monospace;color:#1B1512}
+.wt svg{width:11px;height:14px;display:block}
 .suninfo span{font:500 10px 'IBM Plex Mono',monospace;color:#1B1512;background:var(--sea);padding:2px 7px;border-radius:5px;cursor:pointer;-webkit-user-select:none;user-select:none}
 .suninfo span.on{background:#1B1512;color:#F5EFE6}
 .day{position:relative}
@@ -136,6 +138,11 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .day .pancake{font-size:32px;line-height:1;margin:auto 0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
 .day.link{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
 .day{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#ptr{position:fixed;left:0;right:0;top:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;z-index:60;height:0;overflow:hidden}
+#ptr .pill{margin-bottom:6px;background:#1B1512;color:#F5EFE6;font:500 11px 'IBM Plex Mono',monospace;padding:5px 14px;border-radius:999px;display:flex;align-items:center;gap:7px}
+#ptr .sp{display:inline-block;width:11px;height:11px;border:2px solid rgba(245,239,230,.35);border-top-color:#F5EFE6;border-radius:50%}
+#ptr.spin .sp{animation:ptrspin .7s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
 #shareov{position:fixed;inset:0;background:rgba(27,21,18,.82);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px}
 #shareov img{max-width:92%;max-height:72vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 #shareov .btns{display:flex;gap:10px}
@@ -179,7 +186,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.46</div>
+      <div class="ver">v0.49</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -202,7 +209,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="s"><span class="b" style="background:var(--lv5)"></span>≥ 2,5 m</div>
 </div>
 
-<div class="suninfo"><span id="suninfo"></span></div>
+<div class="suninfo"><div class="wt" id="wtrow"><svg viewBox="0 0 11 14"><path d="M5.5 0C5.5 0 0 6.3 0 9a5.5 5.5 0 0 0 11 0C11 6.3 5.5 0 5.5 0Z" fill="#1B1512"/></svg><span id="wtemp"></span></div><span id="suninfo"></span></div>
 
 <details class="info">
   <summary aria-label="Om beräkningen och datakällorna">ⓘ</summary>
@@ -403,9 +410,15 @@ async function load(){
 }
 
 /* ---------- Windy-länk ---------- */
+/* Windy-länk. Tidsstämpeln i Windys URL tolkas som lokal tid på platsen,
+   samma tid som korten visar. Sätt WINDY_UTC=true om länken skulle hamna
+   fel åt andra hållet (då tolkas den som UTC istället). */
+const WINDY_UTC=false;
 function windyUrl(t){
-  const ts=t.getUTCFullYear()+'-'+String(t.getUTCMonth()+1).padStart(2,'0')+'-'+
-           String(t.getUTCDate()).padStart(2,'0')+'-'+String(t.getUTCHours()).padStart(2,'0');
+  const p=n=>String(n).padStart(2,'0');
+  const ts=WINDY_UTC
+    ? t.getUTCFullYear()+'-'+p(t.getUTCMonth()+1)+'-'+p(t.getUTCDate())+'-'+p(t.getUTCHours())
+    : t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate())+'-'+p(t.getHours());
   return `https://www.windy.com/?waves,${ts},${LAT},${LON},9`;
 }
 
@@ -779,6 +792,73 @@ function maybeRefresh(){
 setInterval(maybeRefresh,60e3);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeRefresh();});
 window.addEventListener('focus',maybeRefresh);
+
+/* ---------- vattentemperatur (mätvärde, SMHI Landsort Norra) ---------- */
+const WT_STATION=2507;  // Landsort Norra; saknas värde tas närmaste station med havstemperatur
+async function loadWaterTemp(){
+  try{
+    const r=await fetch('https://opendata-download-ocobs.smhi.se/api/version/1.0/parameter/5/station-set/all/period/latest-day/data.csv');
+    if(!r.ok)return;
+    const rows=(await r.text()).split(/\r?\n/)
+      .map(l=>l.split(';'))
+      .filter(c=>c.length>=5&&/^\d+$/.test(c[0])&&c[4]!==''&&!isNaN(parseFloat(c[4])))
+      .map(c=>({id:+c[0],lat:+c[2],lon:+c[3],v:parseFloat(c[4])}));
+    if(!rows.length)return;
+    let s=rows.find(q=>q.id===WT_STATION);
+    if(!s){
+      const dist=q=>Math.hypot(q.lat-58.74,(q.lon-17.86)*Math.cos(58.74*Math.PI/180));
+      s=rows.reduce((a,b)=>dist(a)<dist(b)?a:b);
+    }
+    $('wtemp').textContent=s.v.toFixed(1).replace('.',',')+'\u00b0';
+    $('wtrow').style.visibility='visible';
+  }catch(e){}
+}
+loadWaterTemp();
+setInterval(loadWaterTemp,30*60e3);
+
+
+/* ---------- dra neråt för att uppdatera ---------- */
+(function(){
+  const el=document.createElement('div');
+  el.id='ptr';
+  el.innerHTML='<div class="pill"><span class="sp"></span><span class="tx">dra f\u00f6r att uppdatera</span></div>';
+  document.body.appendChild(el);
+  const tx=el.querySelector('.tx');
+  const TRIG=72,MAXH=96;
+  let y0=null,dy=0,busy=false;
+  const set=h=>{el.style.height=h+'px';};
+  addEventListener('touchstart',e=>{
+    if(busy||e.touches.length!==1)return;
+    if((window.scrollY||document.documentElement.scrollTop)>0)return;
+    if(document.getElementById('shareov'))return;
+    y0=e.touches[0].clientY;dy=0;
+  },{passive:true});
+  addEventListener('touchmove',e=>{
+    if(y0==null||busy)return;
+    dy=e.touches[0].clientY-y0;
+    if(dy<=0){set(0);return;}
+    const h=Math.min(MAXH,dy*0.5);
+    set(h);
+    tx.textContent = h>=TRIG*0.5 ? 'sl\u00e4pp f\u00f6r att uppdatera' : 'dra f\u00f6r att uppdatera';
+    if(e.cancelable&&h>2)e.preventDefault();
+  },{passive:false});
+  addEventListener('touchend',async()=>{
+    if(y0==null||busy){y0=null;return;}
+    const fired=dy*0.5>=TRIG*0.5;
+    y0=null;
+    if(!fired){set(0);return;}
+    busy=true;el.classList.add('spin');set(38);
+    tx.textContent='h\u00e4mtar prognos \u2026';
+    if(navigator.vibrate)navigator.vibrate(15);
+    const t0=Date.now();
+    try{await load();tx.textContent='uppdaterad';}
+    catch(e){tx.textContent='kunde inte uppdatera';}
+    await new Promise(r=>setTimeout(r,Math.max(0,650-(Date.now()-t0))));
+    set(0);el.classList.remove('spin');busy=false;
+    setTimeout(()=>{tx.textContent='dra f\u00f6r att uppdatera';},300);
+  });
+})();
+
 
 load();                 // hämtar vid öppning
 updateNextInfo();
