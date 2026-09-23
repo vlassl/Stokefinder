@@ -186,7 +186,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.49</div>
+      <div class="ver">v0.51</div>
       <h1>The Endless Stokefinder</h1>
     </header>
   </div>
@@ -793,28 +793,23 @@ setInterval(maybeRefresh,60e3);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeRefresh();});
 window.addEventListener('focus',maybeRefresh);
 
-/* ---------- vattentemperatur (mätvärde, SMHI Landsort Norra) ---------- */
-const WT_STATION=2507;  // Landsort Norra; saknas värde tas närmaste station med havstemperatur
+/* ---------- vattentemperatur: senaste mätvärde, SMHI Landsort Norra (samma som ViVa visar) ---------- */
+const WT_URL='https://opendata-download-ocobs.smhi.se/api/version/1.0/parameter/5/station/2507/period/latest-day/data.json';
 async function loadWaterTemp(){
   try{
-    const r=await fetch('https://opendata-download-ocobs.smhi.se/api/version/1.0/parameter/5/station-set/all/period/latest-day/data.csv');
+    const r=await fetch(WT_URL,{cache:'no-store'});
     if(!r.ok)return;
-    const rows=(await r.text()).split(/\r?\n/)
-      .map(l=>l.split(';'))
-      .filter(c=>c.length>=5&&/^\d+$/.test(c[0])&&c[4]!==''&&!isNaN(parseFloat(c[4])))
-      .map(c=>({id:+c[0],lat:+c[2],lon:+c[3],v:parseFloat(c[4])}));
-    if(!rows.length)return;
-    let s=rows.find(q=>q.id===WT_STATION);
-    if(!s){
-      const dist=q=>Math.hypot(q.lat-58.74,(q.lon-17.86)*Math.cos(58.74*Math.PI/180));
-      s=rows.reduce((a,b)=>dist(a)<dist(b)?a:b);
-    }
-    $('wtemp').textContent=s.v.toFixed(1).replace('.',',')+'\u00b0';
+    const vals=((await r.json()).value||[])
+      .filter(q=>q&&q.value!=null&&q.value!==''&&!isNaN(parseFloat(q.value)));
+    if(!vals.length)return;
+    const last=vals.reduce((a,b)=>(+b.date>+a.date?b:a));   // senaste tidpunkten
+    const v=parseFloat(last.value);
+    $('wtemp').textContent=v.toFixed(1).replace('.',',')+'\u00b0';
     $('wtrow').style.visibility='visible';
   }catch(e){}
 }
 loadWaterTemp();
-setInterval(loadWaterTemp,30*60e3);
+setInterval(loadWaterTemp,20*60e3);
 
 
 /* ---------- dra neråt för att uppdatera ---------- */
