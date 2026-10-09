@@ -145,7 +145,7 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 #ptr.spin .sp{animation:ptrspin .7s linear infinite}
 @keyframes ptrspin{to{transform:rotate(360deg)}}
 #shareov{position:fixed;inset:0;background:rgba(27,21,18,.82);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px}
-#shareov img{max-width:92%;max-height:72vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#shareov img{-webkit-user-drag:none;user-drag:none;-webkit-user-select:none;user-select:none;max-width:92%;max-height:72vh;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 #shareov .btns{display:flex;gap:10px}
 #shareov button{font:600 14px 'IBM Plex Mono',monospace;padding:10px 22px;border:none;border-radius:9px;cursor:pointer}
 #shareov .share{background:#EB0D6E;color:#F5EFE6}
@@ -216,7 +216,7 @@ html.nw .infobody{color:#0B2545}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.60</div>
+      <div class="ver">v0.61</div>
       <h1>The Endless Stokefinder</h1>
       <div class="nwsub">NORTH OF THE WALL EDITION</div>
     </header>
@@ -800,6 +800,7 @@ async function shareDay(el){
     const img=document.createElement('img');
     img.src=cur.cv.toDataURL('image/png');
     img.alt='Stokefinder';
+    img.draggable=false;
     ov.appendChild(img);
     const hint=document.createElement('div');
     hint.className='hint';
@@ -809,6 +810,7 @@ async function shareDay(el){
     btns.innerHTML=`<button class="share">Dela</button><button class="close">St\u00e4ng</button>`;
     ov.appendChild(btns);
     const kill=()=>ov.remove();
+    ov.addEventListener('dragstart',e=>e.preventDefault());
     ov.querySelector('.close').addEventListener('click',kill);
     ov.addEventListener('click',e=>{if(e.target===ov)kill();});
     // tryck i bilden: rita in/ur dagar
