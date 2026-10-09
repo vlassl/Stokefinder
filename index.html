@@ -54,7 +54,7 @@ body::before{
   background:var(--sky-pink);
   z-index:50;
 }
-.wrap{max-width:760px;margin:0 auto;padding:12px 14px calc(40px + env(safe-area-inset-bottom))}
+.wrap{max-width:760px;margin:0 auto;padding:12px 14px calc(14px + env(safe-area-inset-bottom))}
 
 /* ---------- himmel + horisont + sol ---------- */
 .sky{
@@ -137,7 +137,8 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .day .cr{right:6px}
 .day .pancake{font-size:32px;line-height:1;margin:auto 0;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
 .day.link{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
-.day{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.day,.day *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;user-drag:none}
+.days{touch-action:manipulation}
 #ptr{position:fixed;left:0;right:0;top:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;z-index:60;height:0;overflow:hidden}
 #ptr .pill{margin-bottom:6px;background:#1B1512;color:#F5EFE6;font:500 11px 'IBM Plex Mono',monospace;padding:5px 14px;border-radius:999px;display:flex;align-items:center;gap:7px}
 #ptr .sp{display:inline-block;width:11px;height:11px;border:2px solid rgba(245,239,230,.35);border-top-color:#F5EFE6;border-radius:50%}
@@ -215,7 +216,7 @@ html.nw .infobody{color:#0B2545}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.58</div>
+      <div class="ver">v0.60</div>
       <h1>The Endless Stokefinder</h1>
       <div class="nwsub">NORTH OF THE WALL EDITION</div>
     </header>
@@ -579,7 +580,7 @@ function buildDays(){
       el.setAttribute('role','link');
       el.setAttribute('tabindex','0');
       el.title='Öppna i Windy';
-      const open=()=>{if(lpFired){lpFired=false;return;}window.open(windyUrl(linkTime),'_blank','noopener');};
+      const open=()=>{if(lpFired){lpFired=false;return;}location.href=windyUrl(linkTime);};
       el.addEventListener('click',open);
       el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
     }
@@ -860,6 +861,8 @@ document.getElementById('days').addEventListener('pointerdown',e=>{
 document.addEventListener('pointermove',e=>{
   if(lpStart&&Math.hypot(e.clientX-lpStart[0],e.clientY-lpStart[1])>10)clearTimeout(lpTimer);
 });
+['dragstart','selectstart'].forEach(ev=>
+  document.getElementById('days').addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.day'))e.preventDefault();}));
 document.getElementById('days').addEventListener('contextmenu',e=>{
   if(e.target.closest('.day'))e.preventDefault();
 });
