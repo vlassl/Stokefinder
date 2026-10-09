@@ -215,7 +215,7 @@ html.nw .infobody{color:#0B2545}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.56</div>
+      <div class="ver">v0.57</div>
       <h1>The Endless Stokefinder</h1>
       <div class="nwsub">NORTH OF THE WALL EDITION</div>
     </header>
@@ -620,15 +620,57 @@ async function renderShare(selSet){
   const LV={lv0:'#E3E8E7',lv1:'#F7941D',lv2:'#F7CE1B',lv3:'#12B76A',lv4:'#0E8A5F',lv5:'#5B2BD9'};
   const TX={lv0:'#7A8A90',lv1:'#1B1512',lv2:'#1B1512',lv3:'#1B1512',lv4:'#F5EFE6',lv5:'#F5EFE6'};
   const INK='#1B1512',LIGHT='#F5EFE6',GRAY='#8A8F8E';
-  c.fillStyle='#E84425';c.fillRect(0,0,W,H);
-  c.fillStyle='#EB0D6E';c.fillRect(0,0,W,HDR);
-  c.fillStyle='#FFCB2E';c.beginPath();c.arc(W-128,HDR,74,Math.PI,2*Math.PI);c.fill();
+  if(!NORTH){
+    c.fillStyle='#E84425';c.fillRect(0,0,W,H);
+    c.fillStyle='#EB0D6E';c.fillRect(0,0,W,HDR);
+    c.fillStyle='#FFCB2E';c.beginPath();c.arc(W-128,HDR,74,Math.PI,2*Math.PI);c.fill();
+  }else{
+    // North of the Wall: is, natthimmel med stjärnor, måne
+    c.fillStyle='#C8E4F0';c.fillRect(0,0,W,H);
+    let sd=17;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+    c.strokeStyle='#96C0D6';c.lineWidth=2;c.lineJoin='round';
+    for(let i=0;i<Math.round(W*H/9000);i++){
+      let x=rnd()*W,y=HDR+rnd()*(H-HDR);c.beginPath();c.moveTo(x,y);
+      for(let k=0;k<2+Math.floor(rnd()*3);k++){x+=(rnd()-.5)*60;y+=(rnd()-.4)*22;c.lineTo(x,y);}
+      c.stroke();
+    }
+    c.fillStyle='#EAF7FC';
+    for(let i=0;i<Math.round(W*H/12000);i++){
+      const x=rnd()*W,y=HDR+rnd()*(H-HDR),w=14+rnd()*40,h=w*(.3+rnd()*.3);
+      c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y+h*.3);c.lineTo(x+w*.7,y+h);c.lineTo(x-w*.2,y+h*.8);c.closePath();c.fill();
+    }
+    const g=c.createLinearGradient(0,0,0,HDR);g.addColorStop(0,'#0A224E');g.addColorStop(1,'#2E62A0');
+    c.fillStyle=g;c.fillRect(0,0,W,HDR);
+    c.fillStyle='#E1EEFF';
+    for(let i=0;i<70;i++){const r=[1,1,1.5,2][Math.floor(rnd()*4)];c.beginPath();c.arc(rnd()*W,rnd()*HDR*.9,r,0,2*Math.PI);c.fill();}
+    c.save();c.beginPath();c.rect(0,0,W,HDR);c.clip();
+    const mx=W-128,my=HDR,mr=74;
+    c.fillStyle='#E8EEF4';c.beginPath();c.arc(mx,my,mr,0,2*Math.PI);c.fill();
+    c.fillStyle='#C6D0DE';
+    [[-.40,-.40,.16],[.24,-.60,.12],[.44,-.16,.20],[-.08,-.12,.10]].forEach(([dx,dy,r])=>{
+      c.beginPath();c.arc(mx+dx*mr,my+dy*mr,r*mr,0,2*Math.PI);c.fill();});
+    c.restore();
+  }
   c.textBaseline='middle';
-  c.fillStyle=INK;c.textAlign='left';
+  c.fillStyle=NORTH?'#F0F8FF':INK;c.textAlign='left';
   c.font="500 46px Oswald, 'Arial Narrow', sans-serif";
   c.fillText('The Endless Stokefinder',M+4,HDR/2+2);
+  if(NORTH){
+    // istappar längs titelns underkant + undertitel
+    const tw=c.measureText('The Endless Stokefinder').width,by=HDR/2+2+21;
+    c.fillStyle='#DCEFFC';c.fillRect(M+4,by-2,tw,3);
+    let sd2=5;const r2=()=>{sd2=(sd2*16807)%2147483647;return sd2/2147483647;};
+    for(let x=M+8;x<M+4+tw-3;x+=7+r2()*7){
+      const L=[7,11,16,9,20,12][Math.floor(r2()*6)],w=2.5+r2()*2;
+      c.fillStyle='#CDE8FA';c.beginPath();c.moveTo(x-w,by);c.lineTo(x+w,by);c.lineTo(x,by+L);c.closePath();c.fill();
+    }
+    c.font="600 13px 'IBM Plex Mono', monospace";c.fillStyle='#C8E1FA';
+    c.letterSpacing='2px';
+    c.fillText('NORTH OF THE WALL EDITION',M+6,HDR-14);
+    c.letterSpacing='0px';
+  }
   const lw=lightWindow(new Date());
-  c.font="500 17px 'IBM Plex Mono', monospace";c.fillStyle=GRAY;c.textAlign='right';
+  c.font="500 17px 'IBM Plex Mono', monospace";c.fillStyle=NORTH?'#C8E1FA':GRAY;c.textAlign='right';
   c.fillText(`first light ${fmtHM(lw.dawn)} \u00b7 last light ${fmtHM(lw.dusk)}`,W-14,24);
   function arr(cx,cy,ang,color){
     const a=(ang+180)%360*Math.PI/180,dx=Math.sin(a),dy=-Math.cos(a),L=11;
