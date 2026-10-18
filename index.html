@@ -115,7 +115,9 @@ button:focus-visible{outline:2.5px solid #FFCB2E;outline-offset:2px}
 .day .dn{font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.05em}
 .day .dd{font-size:10px;opacity:.6}
 .day .big{font:600 20px/1.1 'IBM Plex Mono',monospace;margin-top:3px}
-.day .big .unit{font-size:10px}
+.day .big .unit{font-size:10px;font-weight:500}
+.day .big .per{font-size:13px;margin-left:4px}
+.day .big .per .unit{font-size:10px}
 .day .at{font:500 11px 'IBM Plex Mono',monospace}
 .day .meta{font:500 8px 'IBM Plex Mono',monospace;opacity:.65;margin-top:auto;padding-top:3px}
 .day .arrow{display:inline-block;font-size:13px}
@@ -216,7 +218,7 @@ html.nw .infobody{color:#0B2545}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.61</div>
+      <div class="ver">v0.62</div>
       <h1>The Endless Stokefinder</h1>
       <div class="nwsub">NORTH OF THE WALL EDITION</div>
     </header>
@@ -408,7 +410,7 @@ async function fetchModel(model){
   let lastErr=null;
   for(const fd of [16,12,10,8,7]){
     const u=`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}`+
-            `&hourly=wave_height,wave_direction&models=${model}&forecast_days=${fd}&timezone=auto`;
+            `&hourly=wave_height,wave_direction,wave_period&models=${model}&forecast_days=${fd}&timezone=auto`;
     const r=await fetch(u);
     if(r.status===400){lastErr=new Error(`${model}: HTTP 400 (forecast_days=${fd})`);continue;}
     if(!r.ok)throw new Error(`${model}: HTTP ${r.status}`);
@@ -435,17 +437,18 @@ async function load(){
     const base=(ec.status==='fulfilled'?ec.value:ic.value);
     const times=base.hourly.time.map(t=>new Date(t));
     const pack=res=>{
-      if(res.status!=='fulfilled')return {hs:times.map(()=>null),dir:times.map(()=>null),syd:times.map(()=>null)};
+      if(res.status!=='fulfilled')return {hs:times.map(()=>null),dir:times.map(()=>null),syd:times.map(()=>null),per:times.map(()=>null)};
       const h=res.value.hourly;
       const idx=new Map(h.time.map((t,i)=>[t,i]));
-      const hs=[],dir=[],syd=[];
+      const hs=[],dir=[],syd=[],per=[];
       base.hourly.time.forEach(t=>{
         const i=idx.get(t);
         const H=(i!=null)?h.wave_height[i]:null;
         const D=(i!=null)?h.wave_direction[i]:null;
-        hs.push(H);dir.push(D);syd.push(sydKomp(H,D));
+        const P=(i!=null&&h.wave_period)?h.wave_period[i]:null;
+        hs.push(H);dir.push(D);syd.push(sydKomp(H,D));per.push(P);
       });
-      return {hs,dir,syd};
+      return {hs,dir,syd,per};
     };
     const light=new Map();
     times.forEach(t=>{const k=dayKey(t);if(!light.has(k))light.set(k,lightWindow(t));});
@@ -484,6 +487,11 @@ function effAtTime(m,t){
   if(v0==null)return v1;
   if(v1==null)return v0;
   return v0+(v1-v0)*(f-i0);
+}
+function perNear(m,t){
+  const i=Math.round((t-DATA.times[0])/36e5);
+  const p=DATA[m].per;
+  return (p&&i>=0&&i<DATA.times.length)?p[i]:null;
 }
 function dirNear(m,t){
   const i=Math.round((t-DATA.times[0])/36e5);
@@ -538,6 +546,7 @@ function buildDays(){
       const tMax=bt;
       const dir=bi>=0?DATA[bm==='ECMWF'?'ec':'ic'].dir[bi]
                      :dirNear(bm==='ECMWF'?'ec':'ic',bt);
+      const per=perNear(bm==='ECMWF'?'ec':'ic',bt);
       const arrow=dir==null?'':`<span class="arrow" style="transform:rotate(${dir+180}deg)" title="vågriktning ${Math.round(dir)}°">↑</span> ${Math.round(dir)}°`;
       // timremsa: first light -> last light, en färgcell per ljus timme
       let strip='';
@@ -569,7 +578,7 @@ function buildDays(){
         strip=`<div class="strip">${cells}${ticks}</div>`;
       }
       el.innerHTML=corners+head+
-        `<div class="big">${best.toFixed(2).replace('.',',')}<span class="unit"> m</span></div>`+
+        `<div class="big">${best.toFixed(1).replace('.',',')}<span class="unit">m</span>${per!=null?`<span class="per">${Math.round(per)}<span class="unit">s</span></span>`:''}</div>`+
         `<div class="at">kl ${fmtHM(tMax)}</div>`+
         strip+
         `<div class="meta">${arrow} · ${bm}</div>`;
@@ -712,14 +721,23 @@ async function renderShare(selSet){
       const tMax=D.bt;
       const dir=D.bi>=0?DATA[D.bm==='ECMWF'?'ec':'ic'].dir[D.bi]
                        :dirNear(D.bm==='ECMWF'?'ec':'ic',D.bt);
-      const val=D.best.toFixed(2).replace('.',',');
-      c.font="600 42px 'IBM Plex Mono', monospace";
-      const bw=c.measureText(val).width;
-      const x0=x+CW/2-(bw+26)/2;
+      const val=D.best.toFixed(1).replace('.',',');
+      const per=perNear(D.bm==='ECMWF'?'ec':'ic',D.bt);
+      const ps=per!=null?String(Math.round(per)):'';
+      c.font="600 42px 'IBM Plex Mono', monospace"; const bw=c.measureText(val).width;
+      c.font="500 17px 'IBM Plex Mono', monospace"; const uw=c.measureText('m').width, sw2=ps?c.measureText('s').width:0;
+      c.font="600 24px 'IBM Plex Mono', monospace"; const pw=ps?c.measureText(ps).width:0;
+      const gap=ps?8:0;
+      const x0=x+CW/2-(bw+uw+gap+pw+sw2)/2;
       c.textAlign='left';c.fillStyle=TX[lvName];
+      c.font="600 42px 'IBM Plex Mono', monospace";
       c.fillText(val,x0,y+74);
       c.font="500 17px 'IBM Plex Mono', monospace";
-      c.fillText(' m',x0+bw,y+80);
+      c.fillText('m',x0+bw,y+80);
+      if(ps){
+        c.font="600 24px 'IBM Plex Mono', monospace"; c.fillText(ps,x0+bw+uw+gap,y+78);
+        c.font="500 17px 'IBM Plex Mono', monospace"; c.fillText('s',x0+bw+uw+gap+pw,y+80);
+      }
       c.textAlign='center';c.fillStyle=fg;
       c.font="500 19px 'IBM Plex Mono', monospace";
       c.fillText('kl '+fmtHM(tMax),x+CW/2,y+103);
