@@ -209,6 +209,24 @@ html.nw .info summary{background:#0B2545;color:#E8F2FC}
 html.nw .infobody{color:#0B2545}
 .sun{cursor:pointer;transition:background .3s ease,box-shadow .3s ease}
 
+
+/* ================= West Side edition (tryck på "The") ================= */
+.day{position:relative}
+.day .tag{position:absolute;top:7px;left:9px;font:700 11px 'IBM Plex Mono',monospace;color:inherit;cursor:pointer;padding:2px 4px;margin:-2px -4px;border-radius:4px}
+.dual{position:relative;padding:0 9px 9px 0}
+.dual .day.back{position:absolute;top:9px;left:9px;width:calc(100% - 9px);height:calc(100% - 9px);z-index:0}
+.dual .day.front{position:relative;z-index:1;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.dual .day.back>*:not(.tag){visibility:hidden}
+.dual .day.back .tag{left:auto;right:9px;top:auto;bottom:6px}
+.wssub{display:none;position:absolute;left:1px;top:calc(100% + 6px);font:600 8px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;color:#7A1040;white-space:nowrap}
+html.ws .wssub{display:block}
+.ferry{display:none;position:absolute;bottom:0;right:calc(7% + 18px);width:68px;height:33px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='46' viewBox='0 0 96 46'><path d='M4 46 L8 36 L92 36 L88 46 Z' fill='%231B1512'/><rect x='18' y='24' width='56' height='12' fill='%231B1512'/><rect x='26' y='17' width='36' height='7' fill='%231B1512'/><rect x='46' y='8' width='7' height='9' fill='%231B1512'/><rect x='22' y='27' width='5' height='4' fill='%23FFCB2E'/><rect x='30' y='27' width='5' height='4' fill='%23FFCB2E'/><rect x='38' y='27' width='5' height='4' fill='%23FFCB2E'/><rect x='46' y='27' width='5' height='4' fill='%23FFCB2E'/><rect x='54' y='27' width='5' height='4' fill='%23FFCB2E'/><rect x='62' y='27' width='5' height='4' fill='%23FFCB2E'/><rect x='70' y='27' width='5' height='4' fill='%23FFCB2E'/></svg>") no-repeat bottom/contain;z-index:2;pointer-events:none}
+@media(max-width:480px){.ferry{right:calc(5% + 14px);width:56px;height:27px}}
+html.ws .sky{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='110' viewBox='0 0 400 110'><path d='M243 22 q3.5 -4.8999999999999995 7 0 q3.5 -4.8999999999999995 7 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M263 32 q2.5 -3.5 5 0 q2.5 -3.5 5 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M278 18 q3.0 -4.199999999999999 6 0 q3.0 -4.199999999999999 6 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M145 12 q2.5 -3.5 5 0 q2.5 -3.5 5 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M296 50 q2.0 -2.8 4 0 q2.0 -2.8 4 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M196 8 q2.0 -2.8 4 0 q2.0 -2.8 4 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M326.5 30 q1.75 -2.4499999999999997 3.5 0 q1.75 -2.4499999999999997 3.5 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M116.5 40 q1.75 -2.4499999999999997 3.5 0 q1.75 -2.4499999999999997 3.5 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/><path d='M56 14 q2.0 -2.8 4 0 q2.0 -2.8 4 0' fill='none' stroke='%231B1512' stroke-width='1.3' stroke-linecap='round'/></svg>"),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='124' height='70' viewBox='0 0 124 70'><path d='M8 2 L120 2 L110 20 L20 20 Z' fill='%23A6101F'/><path d='M20 20 L30 20 L31 70 L17 70 Z' fill='%23A6101F'/><path d='M98 20 L108 20 L111 70 L97 70 Z' fill='%23A6101F'/><text x='60' y='15' text-anchor='middle' font-family='Arial,Helvetica,sans-serif' font-weight='700' font-size='7.5' letter-spacing='1' fill='%23F3D9DC'>ERIKSBERG</text><rect x='78' y='-1' width='10' height='4' fill='%23A6101F'/><line x1='83' y1='20' x2='83' y2='38' stroke='%23A6101F' stroke-width='1.2'/><rect x='79' y='38' width='8' height='4' fill='%23A6101F'/></svg>");background-repeat:no-repeat,no-repeat;background-position:right 0 top 0,right calc(7% + 112px) bottom 0;background-size:230px 63px,auto 50px}
+@media(max-width:480px){html.ws .sky{background-position:right 0 top 0,right calc(5% + 92px) bottom 0;background-size:200px 55px,auto 46px}}
+#the{cursor:pointer}
+html.ws .skyw{position:relative;z-index:1}
+
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -218,8 +236,9 @@ html.nw .infobody{color:#0B2545}
   <div class="sun" aria-hidden="true"></div>
   <div class="wrap skyw">
     <header>
-      <div class="ver">v0.62</div>
-      <h1>The Endless Stokefinder</h1>
+      <div class="ver">v0.63</div>
+      <h1><span id="the">The</span> Endless Stokefinder</h1>
+      <div class="wssub">WEST SIDE EDITION</div>
       <div class="nwsub">NORTH OF THE WALL EDITION</div>
     </header>
   </div>
@@ -260,12 +279,21 @@ html.nw .infobody{color:#0B2545}
 'use strict';
 const SPOTS={
   syd: {lat:58.387,     lon:17.858,     wt:2507,  // Landsort Norra
-        inSector:d=>d>=90&&d<=270,
+        inSector:d=>d>=90&&d<=270, th:[1.0,1.3,1.5,1.8,2.5],
         txt:'90°–270°, dvs. öst till väst via syd'},
   norr:{lat:60.8760293, lon:17.9537456, wt:33003, // Finngrundet Vågboj
-        inSector:d=>d>=315||d<=45,
-        txt:'315°–45°, dvs. nordväst till nordost via nord'}
+        inSector:d=>d>=315||d<=45, th:[1.0,1.3,1.5,1.8,2.5],
+        txt:'315°–45°, dvs. nordväst till nordost via nord'},
+  roro:{lat:57.9042090, lon:11.0144129, wt:33084, tag:'R', name:'Rörö',
+        inSector:d=>d>=270&&d<=337.5, th:[1.5,1.8,2.0,2.4,2.9],
+        txt:'Rörö 270°–337,5° (V–NNV), Åsa 202,5°–247,5° (SSV–VSV)'},
+  asa: {lat:57.1492974, lon:11.8591082, wt:33084, tag:'Å', name:'Åsa',
+        inSector:d=>d>=202.5&&d<=247.5, th:[1.5,1.8,2.0,2.4,2.9],
+        txt:'Rörö 270°–337,5° (V–NNV), Åsa 202,5°–247,5° (SSV–VSV)'}
 };
+let WEST=/[?&#]west\b/i.test(location.search+location.hash);
+if(WEST)document.documentElement.classList.add('ws');
+let DATAW=null;
 // startar i syd; ?norr i adressen startar i North of the Wall
 let NORTH=/[?&#]norr\b/i.test(location.search+location.hash);
 if(NORTH){
@@ -273,7 +301,7 @@ if(NORTH){
   const tc=document.querySelector('meta[name="theme-color"]');
   if(tc)tc.setAttribute('content','#0A224E');
 }
-let SPOT=NORTH?SPOTS.norr:SPOTS.syd;
+let SPOT=WEST?SPOTS.roro:NORTH?SPOTS.norr:SPOTS.syd;
 let LAT=SPOT.lat, LON=SPOT.lon;
 const CIVIL_ZENITH=96;
 const $=id=>document.getElementById(id);
@@ -289,11 +317,8 @@ function sydKomp(hs,dir){
 /* ---------- nivåklass ---------- */
 function level(v){
   if(v==null)return 'lv0';
-  if(v<1.0)return 'lv0';
-  if(v<1.3)return 'lv1';
-  if(v<1.5)return 'lv2';
-  if(v<1.8)return 'lv3';
-  if(v<2.5)return 'lv4';
+  const t=SPOT.th;
+  for(let i=0;i<5;i++)if(v<t[i])return 'lv'+i;
   return 'lv5';
 }
 
@@ -423,11 +448,8 @@ async function fetchModel(model){
 
 let lastFetch=0;
 let loadSeq=0;
-async function load(){
-  const my=++loadSeq;
-  try{
+async function fetchDataset(){
     const [ec,ic]=await Promise.allSettled([fetchModel('ecmwf_wam025'),fetchModel('ewam')]);
-    if(my!==loadSeq)return;                 // punkten byttes under hämtningen
     if(ec.status==='rejected'&&ic.status==='rejected'){
       const sandbox=String(ec.reason).match(/Failed to fetch|NetworkError|TypeError/i);
       throw new Error(sandbox
@@ -452,11 +474,27 @@ async function load(){
     };
     const light=new Map();
     times.forEach(t=>{const k=dayKey(t);if(!light.has(k))light.set(k,lightWindow(t));});
-    DATA={times,ec:pack(ec),ic:pack(ic),light};
+    return {times,ec:pack(ec),ic:pack(ic),light};
+}
+async function load(){
+  const my=++loadSeq;
+  try{
+    if(WEST){
+      SPOT=SPOTS.roro;LAT=SPOT.lat;LON=SPOT.lon;
+      const R=await fetchDataset(); if(my!==loadSeq)return;
+      SPOT=SPOTS.asa;LAT=SPOT.lat;LON=SPOT.lon;
+      const A=await fetchDataset(); if(my!==loadSeq)return;
+      DATAW={R,A};
+      composeWest();
+    }else{
+      const ds=await fetchDataset(); if(my!==loadSeq)return;   // punkten byttes under hämtningen
+      DATA=ds;
+      buildDays();
+    }
     lastFetch=Date.now();
-    buildDays();
     updateNextInfo();
   }catch(e){
+    if(WEST){SPOT=SPOTS.roro;LAT=SPOT.lat;LON=SPOT.lon;}
     $('nextup').textContent='Fel: '+e.message;
     $('nextup').className='nextup err';
   }
@@ -467,12 +505,12 @@ async function load(){
    samma tid som korten visar. Sätt WINDY_UTC=true om länken skulle hamna
    fel åt andra hållet (då tolkas den som UTC istället). */
 const WINDY_UTC=false;
-function windyUrl(t){
+function windyUrl(t,lat=LAT,lon=LON){
   const p=n=>String(n).padStart(2,'0');
   const ts=WINDY_UTC
     ? t.getUTCFullYear()+'-'+p(t.getUTCMonth()+1)+'-'+p(t.getUTCDate())+'-'+p(t.getUTCHours())
     : t.getFullYear()+'-'+p(t.getMonth()+1)+'-'+p(t.getDate())+'-'+p(t.getHours());
-  return `https://www.windy.com/?waves,${ts},${LAT},${LON},9`;
+  return `https://www.windy.com/?waves,${ts},${lat},${lon},9`;
 }
 
 /* ---------- dagskort ---------- */
@@ -499,6 +537,7 @@ function dirNear(m,t){
 }
 function buildDays(){
   const box=$('days');box.innerHTML='';
+  const sp=SPOT;
   if(!DATA)return;
   const groups=new Map();
   DATA.times.forEach((t,i)=>{
@@ -539,7 +578,7 @@ function buildDays(){
     let linkTime=null;
     if(best==null){
       el.innerHTML=corners+head+`<div class="nodata">ingen data</div>`;
-    }else if(best<1.0){
+    }else if(best<SPOT.th[0]){
       el.innerHTML=corners+head+`<div class="pancake" role="img" aria-label="platt – under 1 meter">🥞</div>`;
       linkTime=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate(),12,0); // mitt på dagen
     }else{
@@ -589,11 +628,13 @@ function buildDays(){
       el.setAttribute('role','link');
       el.setAttribute('tabindex','0');
       el.title='Öppna i Windy';
-      const open=()=>{if(lpFired){lpFired=false;return;}location.href=windyUrl(linkTime);};
+      const open=()=>{if(lpFired){lpFired=false;return;}location.href=windyUrl(linkTime,sp.lat,sp.lon);};
       el.addEventListener('click',open);
       el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
     }
-    el.dataset.k=k;box.appendChild(el);
+    el.dataset.k=k;el.dataset.best=(best==null?'':best);
+    if(WEST&&sp.tag)el.insertAdjacentHTML('afterbegin','<span class="tag">'+sp.tag+'</span>');
+    box.appendChild(el);
   });
 }
 
@@ -714,7 +755,7 @@ async function renderShare(selSet){
     if(D.best==null){
       c.globalAlpha=.6;c.font="500 18px 'IBM Plex Mono', monospace";
       c.fillText('ingen data',x+CW/2,y+CH/2+8);c.globalAlpha=1;
-    }else if(D.best<1.0){
+    }else if(D.best<SPOT.th[0]){
       c.font="62px sans-serif";
       c.fillText('\ud83e\udd5e',x+CW/2,y+CH/2+14);
     }else{
@@ -910,6 +951,7 @@ window.addEventListener('focus',maybeRefresh);
 /* ---------- North of the Wall: växla genom att trycka på solen/månen ---------- */
 function setNW(on){
   NORTH=on;
+  if(on&&WEST){WEST=false;document.documentElement.classList.remove('ws');updateLegend();}
   SPOT=on?SPOTS.norr:SPOTS.syd; LAT=SPOT.lat; LON=SPOT.lon;
   document.documentElement.classList.toggle('nw',on);
   const tc=document.querySelector('meta[name="theme-color"]');
@@ -926,10 +968,65 @@ if($('sectxt'))$('sectxt').textContent=SPOT.txt;
 document.querySelector('.sky').addEventListener('click',e=>{
   const r=document.querySelector('.sun').getBoundingClientRect();
   if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){
-    setNW(!NORTH);
+    if(WEST)setWS(false); else setNW(!NORTH);
     if(navigator.vibrate)navigator.vibrate(15);
   }
 });
+
+/* ---------- West Side: två punkter, bästa prognosen överst ---------- */
+const LEGEND_SYD=['🥞 < 1,0 m','1,0–1,2','1,3–1,4','1,5–1,7','1,8–2,4','≥ 2,5 m'];
+const LEGEND_WEST=['🥞 < 1,5 m','1,5–1,7','1,8–1,9','2,0–2,3','2,4–2,8','≥ 2,9 m'];
+function updateLegend(){
+  const L=WEST?LEGEND_WEST:LEGEND_SYD;
+  document.querySelectorAll('.scale .s').forEach((el,i)=>{
+    const b=el.querySelector('.b');el.textContent='';el.appendChild(b);el.appendChild(document.createTextNode(L[i]));
+  });
+}
+function composeWest(){
+  const box=$('days');
+  const render=(sp,ds)=>{SPOT=sp;LAT=sp.lat;LON=sp.lon;DATA=ds;buildDays();return new Map([...box.children].map(el=>[el.dataset.k,el]));};
+  const rm=render(SPOTS.roro,DATAW.R), am=render(SPOTS.asa,DATAW.A);
+  box.innerHTML='';
+  const keys=[...new Set([...rm.keys(),...am.keys()])].sort();
+  const isWave=el=>el.dataset.best!==''&&parseFloat(el.dataset.best)>=SPOTS.roro.th[0];
+  keys.forEach(k=>{
+    const r=rm.get(k),a=am.get(k);
+    if(r&&a&&isWave(r)&&isWave(a)){
+      const [front,back]=parseFloat(a.dataset.best)>parseFloat(r.dataset.best)?[a,r]:[r,a];
+      const w=document.createElement('div');w.className='dual';
+      back.classList.add('back');front.classList.add('front');
+      w.appendChild(back);w.appendChild(front);
+      [front,back].forEach(el=>el.querySelector('.tag').addEventListener('click',e=>{
+        e.stopPropagation();e.preventDefault();
+        w.querySelectorAll('.day').forEach(d=>{d.classList.toggle('front');d.classList.toggle('back');});
+        if(navigator.vibrate)navigator.vibrate(10);
+      }));
+      box.appendChild(w);
+    }else{
+      box.appendChild((r&&isWave(r))?r:(a&&isWave(a))?a:(r||a));
+    }
+  });
+  // referensdata för solrad och delningsbild
+  SPOT=SPOTS.roro;LAT=SPOT.lat;LON=SPOT.lon;DATA=DATAW.R;
+}
+function setWS(on){
+  WEST=on;
+  if(on){NORTH=false;document.documentElement.classList.remove('nw');}
+  document.documentElement.classList.toggle('ws',on);
+  const tc=document.querySelector('meta[name="theme-color"]');
+  if(tc)tc.setAttribute('content','#EB0D6E');
+  SPOT=on?SPOTS.roro:SPOTS.syd;LAT=SPOT.lat;LON=SPOT.lon;
+  if($('sectxt'))$('sectxt').textContent=SPOT.txt;
+  try{history.replaceState(null,'',location.pathname+(on?'?west':''));}catch(e){}
+  $('wtrow').style.visibility='hidden';
+  updateLegend();
+  updateSunInfo();
+  load();
+  if(typeof loadWaterTemp==='function')loadWaterTemp();
+}
+$('the').addEventListener('click',e=>{e.stopPropagation();setWS(!WEST);if(navigator.vibrate)navigator.vibrate(15);});
+if(WEST){updateLegend();if($('sectxt'))$('sectxt').textContent=SPOT.txt;}
+
 
 
 
